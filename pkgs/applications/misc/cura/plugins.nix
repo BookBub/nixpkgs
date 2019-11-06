@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub, cmake, python3Packages }:
+{ stdenv, fetchFromGitHub, fetchpatch, cmake, python3Packages }:
 
 let
 
@@ -6,13 +6,13 @@ let
 
     octoprint = stdenv.mkDerivation rec {
       pname = "Cura-OctoPrintPlugin";
-      version = "3.5.5";
+      version = "3.5.8";
 
       src = fetchFromGitHub {
         owner = "fieldOfView";
         repo = pname;
-        rev = "d05a9a4c1a01c584d5cec4f4b7d170077235467a";
-        sha256 = "0ik69g3kbn7rz2wh0cfq9ww8x222kagd8jvsd4xlqgq4yrf0jk7x";
+        rev = "a82a42a87bbeb390b80b991afb1a6741c46a3432";
+        sha256 = "0q5yd7pw626qls2ks2y39hb9czd6lgh71jalzl2drwdi6a8mwsfz";
       };
 
       nativeBuildInputs = [ cmake ];

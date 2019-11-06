@@ -22,24 +22,17 @@
 
 buildPythonPackage rec {
   pname = "ipython";
-  version = "7.5.0";
+  version = "7.8.0";
   disabled = pythonOlder "3.5";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "e840810029224b56cd0d9e7719dc3b39cf84d577f8ac686547c8ba7a06eeab26";
+    sha256 = "dd76831f065f17bddd7eaa5c781f5ea32de5ef217592cf019e34043b56895aa1";
   };
 
   prePatch = lib.optionalString stdenv.isDarwin ''
     substituteInPlace setup.py --replace "'gnureadline'" " "
   '';
-
-  patches = [
-    (fetchpatch {
-      url = "https://github.com/ipython/ipython/commit/e1b53e9ef91a43b9e275bb9e48b4253218375d87.patch";
-      sha256 = "sha256:0q7zsgalwxss6aikhakbdkvvz0g4ac4sa3ncrklm74ksqh56rsgb";
-    })
-  ];
 
   buildInputs = [ glibcLocales ];
 

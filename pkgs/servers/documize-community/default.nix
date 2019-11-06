@@ -2,13 +2,13 @@
 
 buildGoPackage rec {
   pname = "documize-community";
-  version = "3.0.0";
+  version = "3.4.1";
 
   src = fetchFromGitHub {
     owner = "documize";
     repo = "community";
     rev = "v${version}";
-    sha256 = "01q7yx35gp41lnm9zbwq0maf7wiv86mi6fww3hl1cddmgdlksss9";
+    sha256 = "1qbf5c42mf30kc4yrk7mav8hk91v5yjx32h9wirmqkcb9k2lpv7s";
   };
 
   goPackagePath = "github.com/documize/community";
@@ -19,7 +19,7 @@ buildGoPackage rec {
     runHook preBuild
 
     pushd go/src/github.com/documize/community
-    go build -gcflags="all=-trimpath=$GOPATH" -o bin/documize ./edition/community.go
+    GO111MODULE=off go build -gcflags="all=-trimpath=$GOPATH" -o bin/documize ./edition/community.go
     popd
 
     runHook postBuild

@@ -272,8 +272,13 @@ in
       port = ${toString cfg.port}
       datadir = ${cfg.dataDir}
       ${optionalString (cfg.bind != null) "bind-address = ${cfg.bind}" }
-      ${optionalString (cfg.replication.role == "master" || cfg.replication.role == "slave") "log-bin=mysql-bin"}
-      ${optionalString (cfg.replication.role == "master" || cfg.replication.role == "slave") "server-id = ${toString cfg.replication.serverId}"}
+      ${optionalString (cfg.replication.role == "master" || cfg.replication.role == "slave")
+      ''
+        log-bin=mysql-bin-${toString cfg.replication.serverId}
+        log-bin-index=mysql-bin-${toString cfg.replication.serverId}.index
+        relay-log=mysql-relay-bin
+        server-id = ${toString cfg.replication.serverId}
+      ''}
       ${optionalString (cfg.ensureUsers != [])
       ''
         plugin-load-add = auth_socket.so
@@ -319,7 +324,9 @@ in
           ExecStart = "${mysql}/bin/mysqld --defaults-file=/etc/my.cnf ${mysqldOptions} $_WSREP_NEW_CLUSTER $_WSREP_START_POSITION";
           ExecStartPost =
             let
-              setupScript = pkgs.writeShellScript "mysql-setup" ''
+              setupScript = pkgs.writeScript "mysql-setup" ''
+                #!${pkgs.runtimeShell} -e
+
                 ${optionalString (!hasNotify) ''
                   # Wait until the MySQL server is available for use
                   count=0
@@ -379,6 +386,7 @@ in
 
                         ( echo "stop slave;"
                           echo "change master to master_host='${cfg.replication.masterHost}', master_user='${cfg.replication.masterUser}', master_password='${cfg.replication.masterPassword}';"
+                          echo "set global slave_exec_mode='IDEMPOTENT';"
                           echo "start slave;"
                         ) | ${mysql}/bin/mysql -u root -N
                       ''}
