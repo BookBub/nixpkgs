@@ -8,13 +8,13 @@ in clangStdenv.mkDerivation rec {
   # In theory this could use GCC + Clang rather than just Clang,
   # but https://github.com/NixOS/nixpkgs/issues/29877 stops this
   name = "openshadinglanguage-${version}";
-  version = "1.10.5";
+  version = "1.10.9";
 
   src = fetchFromGitHub {
     owner = "imageworks";
     repo = "OpenShadingLanguage";
-    rev = "Release-1.10.5";
-    sha256 = "1g7izkjqb5xmp87k2aw0fgkxhcf7b9jn9hi60lwav3yhs50j8qsi";
+    rev = "Release-1.10.9";
+    sha256 = "1dwf10f2fpxc55pymwkapql20nc462mq61hv21c527994c2qp1ll";
   };
 
   cmakeFlags = [ "-DUSE_BOOST_WAVE=ON" "-DENABLERTTI=ON" ];

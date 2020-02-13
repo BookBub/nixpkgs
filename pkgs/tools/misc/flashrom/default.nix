@@ -1,12 +1,12 @@
 { lib, stdenv, fetchurl, pkgconfig, libftdi, pciutils }:
 
 stdenv.mkDerivation rec {
-  name = "flashrom-${version}";
-  version = "1.0.1";
+  pname = "flashrom";
+  version = "1.2";
 
   src = fetchurl {
     url = "https://download.flashrom.org/releases/flashrom-v${version}.tar.bz2";
-    sha256 = "0i6yrrl69hrqmwd7azj7x3j46m0qpvzmk3b5basym7mnlpfzhyfm";
+    sha256 = "0ax4kqnh7kd3z120ypgp73qy1knz47l6qxsqzrfkd97mh5cdky71";
   };
 
   # Newer versions of libusb deprecate some API flashrom uses.
@@ -26,5 +26,6 @@ stdenv.mkDerivation rec {
     license = licenses.gpl2;
     maintainers = with maintainers; [ funfunctor fpletz ];
     platforms = with platforms; linux;
+    badPlatforms = [ "aarch64-linux" ];
   };
 }

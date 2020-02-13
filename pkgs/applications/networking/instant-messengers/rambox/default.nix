@@ -29,7 +29,7 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  unpackPhase = ":";
+  dontUnpack = true;
 
   dontWrapGApps = true; # we only want $gappsWrapperArgs here
 
@@ -46,7 +46,7 @@ stdenv.mkDerivation {
       --prefix PATH : ${xdg_utils}/bin
   '';
 
-  inherit (rambox-bare.meta // {
+  meta = rambox-bare.meta // {
     platforms = [ "i686-linux" "x86_64-linux" ];
-  });
+  };
 }

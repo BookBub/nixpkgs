@@ -7,6 +7,11 @@ let
   };
 in
 nodePackages // {
+  "@angular/cli" = nodePackages."@angular/cli".override {
+    prePatch = ''
+      export NG_CLI_ANALYTICS=false
+    '';
+  };
   bower2nix = nodePackages.bower2nix.override {
     buildInputs = [ pkgs.makeWrapper ];
     postInstall = ''
@@ -21,7 +26,7 @@ nodePackages // {
   };
 
   dat = nodePackages.dat.override {
-    buildInputs = [ nodePackages.node-gyp-build ];
+    buildInputs = [ nodePackages.node-gyp-build pkgs.libtool pkgs.autoconf pkgs.automake ];
   };
 
   dnschain = nodePackages.dnschain.override {
@@ -30,6 +35,10 @@ nodePackages // {
       wrapProgram $out/bin/dnschain --suffix PATH : ${pkgs.openssl.bin}/bin
     '';
   };
+
+  bitwarden-cli = pkgs.lib.overrideDerivation nodePackages."@bitwarden/cli" (drv: {
+    name = "bitwarden-cli-${drv.version}";
+  });
 
   ios-deploy = nodePackages.ios-deploy.override (drv: {
     nativeBuildInputs = drv.nativeBuildInputs or [] ++ [ pkgs.buildPackages.rsync ];
@@ -64,10 +73,6 @@ nodePackages // {
     '';
   };
 
-  npm2nix = nodePackages."npm2nix-git://github.com/NixOS/npm2nix.git#5.12.0".override {
-    postInstall = "npm run-script prepublish";
-  };
-
   pnpm = nodePackages.pnpm.override {
     nativeBuildInputs = [ pkgs.makeWrapper ];
 
@@ -87,7 +92,7 @@ nodePackages // {
     '';
   };
 
-  scuttlebot = nodePackages.scuttlebot.override {
+  ssb-server = nodePackages.ssb-server.override {
     buildInputs = [ pkgs.automake pkgs.autoconf nodePackages.node-gyp-build ];
   };
 
@@ -115,5 +120,9 @@ nodePackages // {
 
       nodePackages.node-pre-gyp
     ];
+  };
+
+  thelounge = nodePackages.thelounge.override {
+    buildInputs = [ nodePackages.node-pre-gyp ];
   };
 }
