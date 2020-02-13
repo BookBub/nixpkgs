@@ -161,9 +161,6 @@ buildPythonPackage rec {
   # dumb-init is only needed for CI and Docker, not relevant for NixOS.
   substituteInPlace setup.py \
      --replace "'dumb-init>=1.2.2'," ""
-
-   substituteInPlace tests/core.py \
-     --replace "/bin/bash" "${stdenv.shell}"
   '';
 
   checkPhase = ''
