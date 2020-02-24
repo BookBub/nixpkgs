@@ -34,15 +34,6 @@ buildPythonPackage rec {
     "test_url_package"
     "test_editable_package"
     "test_locally_available_editable_package_is_not_archived_in_cache_dir"
-    "test_dry_run_option"
-    "test_dry_run_doesnt_touch_output_file"
-    "test_upgrade_package_doesnt_remove_annotation"
-    "test_pre_option"
-    "test_upgrade_packages_version_option"
-    "test_upgrade_packages_version_option_and_upgrade"
-    "test_upgrade_packages_version_option_no_existing_file"
-    "test_upgrade_packages_version_option_and_upgrade_no_existing_file"
-    "test_input_file_without_extension"
   ];
 
   checkPhase = ''
