@@ -4,34 +4,40 @@ let
   inherit (stdenv.hostPlatform) system;
 
   plat = {
-    "i686-linux" = "linux-ia32";
-    "x86_64-linux" = "linux-x64";
-    "x86_64-darwin" = "darwin";
+    x86_64-linux = "linux-x64";
+    x86_64-darwin = "darwin";
   }.${system};
 
   archive_fmt = if system == "x86_64-darwin" then "zip" else "tar.gz";
 
   sha256 = {
-    "i686-linux" = "0i572kxc7h63jxl6mw5k3gv08m9padqkky5k1f3w0d638hxhfl23";
-    "x86_64-linux" = "0577lqpfrjgwbj27hm59kflb558mkl2nx00ys0hwndayqv0bfnvg";
-    "x86_64-darwin" = "047sj0j9k74fvw9fc1ripqk2vy4v17jw488m7r95nf0cyyk08xg0";
+    x86_64-linux = "1wb4s2jw90irlawgl6539gwl0xwaxglaksmbcddbvnr6rq3ypn8n";
+    x86_64-darwin = "16c1r7knfd5pfqhnk77nanh82azkc28pwkqfcyasbdgm70k17d3p";
+  }.${system};
+
+  sourceRoot = {
+    x86_64-linux = ".";
+    x86_64-darwin = "";
   }.${system};
 in
   callPackage ./generic.nix rec {
+    inherit sourceRoot;
+    # The update script doesn't correctly change the hash for darwin, so please:
+    # nixpkgs-update: no auto update
 
-    version = "1.35.1";
+    # Please backport all compatible updates to the stable release.
+    # This is important for the extension ecosystem.
+    version = "1.45.0";
     pname = "vscodium";
 
     executableName = "codium";
     longName = "VSCodium";
-    shortName = "Codium";
+    shortName = "vscodium";
 
     src = fetchurl {
       url = "https://github.com/VSCodium/vscodium/releases/download/${version}/VSCodium-${plat}-${version}.${archive_fmt}";
       inherit sha256;
     };
-
-    sourceRoot = ".";
 
     meta = with stdenv.lib; {
       description = ''
@@ -45,10 +51,10 @@ in
         and code refactoring. It is also customizable, so users can change the
         editor's theme, keyboard shortcuts, and preferences
       '';
-      homepage = https://github.com/VSCodium/vscodium;
-      downloadPage = https://github.com/VSCodium/vscodium/releases;
+      homepage = "https://github.com/VSCodium/vscodium";
+      downloadPage = "https://github.com/VSCodium/vscodium/releases";
       license = licenses.mit;
-      maintainers = with maintainers; [];
-      platforms = [ "i686-linux" "x86_64-linux" "x86_64-darwin" ];
+      maintainers = with maintainers; [ synthetica turion ];
+      platforms = [ "x86_64-linux" "x86_64-darwin" ];
     };
   }

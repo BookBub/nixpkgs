@@ -2,12 +2,12 @@
 , itsdangerous, click, werkzeug, jinja2, pytest }:
 
 buildPythonPackage rec {
-  version = "1.0.3";
+  version = "1.1.1";
   pname = "Flask";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "ad7c6d841e64296b962296c2c2dabc6543752985727af86a975072dea984b6f3";
+    sha256 = "13f9f196f330c7c2c5d7a5cf91af894110ca0215ac051b5844701f2bfd934d52";
   };
 
   checkInputs = [ pytest ];
@@ -21,7 +21,7 @@ buildPythonPackage rec {
   doCheck = false;
 
   meta = with stdenv.lib; {
-    homepage = http://flask.pocoo.org/;
+    homepage = "http://flask.pocoo.org/";
     description = "A microframework based on Werkzeug, Jinja 2, and good intentions";
     license = licenses.bsd3;
   };

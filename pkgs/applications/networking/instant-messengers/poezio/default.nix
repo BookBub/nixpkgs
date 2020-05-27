@@ -1,27 +1,29 @@
-{ lib, buildPythonApplication, fetchurl, pythonOlder
-, pytest, aiodns, slixmpp, pyinotify, potr, mpd2, cffi, pkgconfig }:
+{ lib, buildPythonApplication, fetchFromGitHub, pythonOlder
+, pytest, aiodns, slixmpp, pyinotify, potr, mpd2, cffi, pkgconfig, setuptools }:
 buildPythonApplication rec {
-    name = "poezio-${version}";
-    version = "0.12";
+    pname = "poezio";
+    version = "0.13";
 
     disabled = pythonOlder "3.4";
 
-    buildInputs = [ pytest ];
-    propagatedBuildInputs = [ aiodns slixmpp pyinotify potr mpd2 cffi ];
+    checkInputs = [ pytest ];
+    propagatedBuildInputs = [ aiodns slixmpp pyinotify potr mpd2 cffi setuptools ];
     nativeBuildInputs = [ pkgconfig ];
 
-    src = fetchurl {
-      url = "http://dev.louiz.org/attachments/download/129/${name}.tar.gz";
-      sha256 = "11n9x82xyjwbqk28lsfnvqwn8qc9flv6w2c64camh6j3148ykpvz";
+    src = fetchFromGitHub {
+      owner = pname;
+      repo = pname;
+      rev = "v${version}";
+      sha256 = "14ig7va0yf5wdhi8hk00f1wni8pj37agggdnvsicvcw2rz1cdw0x";
     };
 
     checkPhase = ''
-      py.test
+      pytest
     '';
 
     meta = with lib; {
       description = "Free console XMPP client";
-      homepage = https://poez.io;
+      homepage = "https://poez.io";
       license = licenses.mit;
       maintainers = [ maintainers.lsix ];
     };

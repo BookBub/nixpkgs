@@ -1,14 +1,14 @@
-{ stdenv, fetchFromGitHub, cmake, gmp }:
+{ stdenv, fetchFromGitHub, cmake, gmp, coreutils }:
 
 stdenv.mkDerivation rec {
-  name = "lean-${version}";
-  version = "3.4.2";
+  pname = "lean";
+  version = "3.14.0";
 
   src = fetchFromGitHub {
-    owner  = "leanprover";
+    owner  = "leanprover-community";
     repo   = "lean";
     rev    = "v${version}";
-    sha256 = "0zpnfg6kyg120rrdr336i1lymmzz4xgcqpn96iavhzhlaanmx55l";
+    sha256 = "1dlzap3j26rh93ick1lqb7g3jkqjpd33gl4gqfcbx22v62258y5b";
   };
 
   nativeBuildInputs = [ cmake ];
@@ -19,11 +19,18 @@ stdenv.mkDerivation rec {
     cd src
   '';
 
+  postInstall = stdenv.lib.optionalString stdenv.isDarwin ''
+    substituteInPlace $out/bin/leanpkg \
+      --replace "greadlink" "${coreutils}/bin/readlink"
+  '';
+
   meta = with stdenv.lib; {
     description = "Automatic and interactive theorem prover";
-    homepage    = https://leanprover.github.io/;
+    homepage    = "https://leanprover.github.io/";
+    changelog   = "https://github.com/leanprover-community/lean/blob/v${version}/doc/changes.md";
     license     = licenses.asl20;
     platforms   = platforms.unix;
     maintainers = with maintainers; [ thoughtpolice gebner ];
   };
 }
+

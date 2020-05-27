@@ -6,14 +6,14 @@
 
 stdenv.mkDerivation rec {
 
-    name = "yafaray-core-${version}";
-    version = "3.3.0";
+    pname = "yafaray-core";
+    version = "3.4.4";
 
     src = fetchFromGitHub {
       owner  = "YafaRay";
       repo   = "Core";
       rev    = "v${version}";
-      sha256 = "04p3nlg1rv617qf8v1nzjl6f0w43rvi8w9j6l6ck4bvl77v6cjp6";
+      sha256 = "140vnaihz09rdvp0mqgrs26b3a2fv5wm49ar6817p4qklfx71l0g";
     };
 
     preConfigure = ''
@@ -27,7 +27,7 @@ stdenv.mkDerivation rec {
 
     meta = with stdenv.lib; {
       description = "A free, open source raytracer";
-      homepage = http://www.yafaray.org;
+      homepage = "http://www.yafaray.org";
       maintainers = with maintainers; [ hodapp ];
       license = licenses.lgpl21;
       platforms = platforms.linux;

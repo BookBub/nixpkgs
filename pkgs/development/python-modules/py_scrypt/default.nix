@@ -18,8 +18,8 @@ buildPythonPackage rec {
 
   meta = with stdenv.lib; {
     description = "Bindings for scrypt key derivation function library";
-    homepage = https://pypi.python.org/pypi/scrypt;
-    maintainers = with maintainers; [ asymmetric ];
+    homepage = "https://pypi.python.org/pypi/scrypt";
+    maintainers = [];
     license = licenses.bsd2;
   };
 }

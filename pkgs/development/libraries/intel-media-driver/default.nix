@@ -4,14 +4,14 @@
 }:
 
 stdenv.mkDerivation rec {
-  name = "intel-media-driver-${version}";
-  version = "19.1.0";
+  pname = "intel-media-driver";
+  version = "19.4.0r";
 
   src = fetchFromGitHub {
     owner  = "intel";
     repo   = "media-driver";
     rev    = "intel-media-${version}";
-    sha256 = "072ry87h1lds14fqb2sfz3n2sssvacamaxv2gj4nd8agnzbwizn7";
+    sha256 = "0gnd82z0wgiw5my1hnqlk9hcjjqpsgasqq5xcdrbkfa40wpb132a";
   };
 
   cmakeFlags = [
@@ -26,7 +26,7 @@ stdenv.mkDerivation rec {
   buildInputs = [ libva libpciaccess intel-gmmlib libX11 ];
 
   meta = with stdenv.lib; {
-    homepage = https://github.com/intel/media-driver;
+    homepage = "https://github.com/intel/media-driver";
     license = with licenses; [ bsd3 mit ];
     description = "Intel Media Driver for VAAPI — Broadwell+ iGPUs";
     platforms = platforms.linux;

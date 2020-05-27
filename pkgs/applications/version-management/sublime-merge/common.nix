@@ -2,7 +2,7 @@
 
 { fetchurl, stdenv, xorg, glib, glibcLocales, gtk3, cairo, pango, libredirect, makeWrapper, wrapGAppsHook
 , pkexecPath ? "/run/wrappers/bin/pkexec"
-, writeScript, common-updater-scripts, curl, gnugrep
+, writeScript, common-updater-scripts, curl, gnugrep, coreutils
 }:
 
 let
@@ -18,7 +18,7 @@ let
   arch = "x64";
 
   libPath = stdenv.lib.makeLibraryPath [ xorg.libX11 glib gtk3 cairo pango ];
-  redirects = [ "/usr/bin/pkexec=${pkexecPath}" ];
+  redirects = [ "/usr/bin/pkexec=${pkexecPath}" "/bin/true=${coreutils}/bin/true" ];
 in let
   binaryPackage = stdenv.mkDerivation {
     pname = "${pname}-bin";
@@ -109,7 +109,7 @@ in stdenv.mkDerivation (rec {
 
   meta = with stdenv.lib; {
     description = "Git client from the makers of Sublime Text";
-    homepage = https://www.sublimemerge.com;
+    homepage = "https://www.sublimemerge.com";
     maintainers = with maintainers; [ zookatron ];
     license = licenses.unfree;
     platforms = [ "x86_64-linux" ];

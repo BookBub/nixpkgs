@@ -1,24 +1,36 @@
-{ stdenv, buildGoPackage, fetchFromGitHub }:
+{ stdenv, buildGoModule, fetchFromGitHub, olm }:
 
-buildGoPackage rec {
-  name = "mautrix-unstable-${version}";
-  version = "2019-02-24";
-
-  goPackagePath = "maunium.net/go/mautrix-whatsapp";
+buildGoModule {
+  pname = "mautrix-whatsapp-unstable";
+  version = "2020-05-27";
 
   src = fetchFromGitHub {
     owner = "tulir";
     repo = "mautrix-whatsapp";
-    rev = "485acf6de654b8fb70007876c074fb004eb9717b";
-    sha256 = "1v7h3s8h0aiq6g06h9j1sidw8y5aiw24sgdh9knr1c90pvvc7pmv";
+    rev = "7cf19b0908dec6cb8239aebc3f79ee88dccbfc51";
+    sha256 = "14cadqvbcjd9vp6dix3jzn0l071r3i9sz0lwpppgzpid8mg9zbx4";
   };
 
-  goDeps = ./deps.nix;
+  buildInputs = [ olm ];
+
+  vendorSha256 = "01psqvxkf13had7gkg1cbzf2flac4a6ivlb7vfzw7s50vhwkb95d";
+
+  overrideModAttrs = _: {
+    postBuild = ''
+      rm -r vendor/github.com/chai2010/webp
+      cp -r --reflink=auto ${fetchFromGitHub {
+        owner = "chai2010";
+        repo = "webp";
+        rev = "3da79ec3d682694d42bfd211db18fc1343c07cd7";
+        sha256 = "0gh3g52vz8na153mjmxkl80g3dvrcjw77xpjs1c02vagpj9jyw46";
+      }} vendor/github.com/chai2010/webp
+    '';
+  };
 
   meta = with stdenv.lib; {
-    homepage = https://github.com/tulir/mautrix-whatsapp;
+    homepage = "https://github.com/tulir/mautrix-whatsapp";
     description = "Matrix <-> Whatsapp hybrid puppeting/relaybot bridge";
     license = licenses.agpl3;
-    maintainers = with maintainers; [ vskilet ];
+    maintainers = with maintainers; [ vskilet ma27 ];
   };
 }
