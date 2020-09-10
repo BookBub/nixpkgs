@@ -72,6 +72,7 @@ in {
       suffix = "";
     };
     sha256 = "0h6a5fr7ram2s483lh0pnmc4ncijb8llnpfdxdcl5dxr01hza400";
+    openssl = openssl_1_0_2;
     inherit (darwin) configd;
     inherit passthruFun;
   };
@@ -127,10 +128,6 @@ in {
     inherit (darwin) configd;
     inherit passthruFun;
   };
-
-  python352custom = (python35.override {
-    openssl = openssl_1_0_2;
-  });
 
   # Minimal versions of Python (built without optional dependencies)
   python3Minimal = (python38.override {
