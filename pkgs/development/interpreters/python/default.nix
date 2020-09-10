@@ -131,7 +131,7 @@ in {
   python352custom = (python35.override {
     self = python352custom;
     openssl = openssl_1_0_2;
-  })
+  });
 
   # Minimal versions of Python (built without optional dependencies)
   python3Minimal = (python38.override {
