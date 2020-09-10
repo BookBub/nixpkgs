@@ -129,7 +129,6 @@ in {
   };
 
   python352custom = (python35.override {
-    self = python352custom;
     openssl = openssl_1_0_2;
   });
 

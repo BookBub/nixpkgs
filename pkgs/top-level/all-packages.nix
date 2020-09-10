@@ -9838,13 +9838,13 @@ in
   inherit (pythonInterpreters) python27 python35 python36 python37 python38 python39 python352custom python3Minimal pypy27 pypy36;
 
   # Python package sets.
-  python27Packages = lib.hiPrioSet (recurseIntoAttrs python27.pkgs);
-  python35Packages = python35.pkgs;
+  python27Packages  = lib.hiPrioSet (recurseIntoAttrs python27.pkgs);
+  python35Packages  = python35.pkgs;
   python352Packages = python352custom.pkgs;
-  python36Packages = python36.pkgs;
-  python37Packages = recurseIntoAttrs python37.pkgs;
-  python38Packages = recurseIntoAttrs python38.pkgs;
-  python39Packages = python39.pkgs;
+  python36Packages  = python36.pkgs;
+  python37Packages  = recurseIntoAttrs python37.pkgs;
+  python38Packages  = recurseIntoAttrs python38.pkgs;
+  python39Packages  = python39.pkgs;
   pypyPackages = pypy.pkgs;
   pypy2Packages = pypy2.pkgs;
   pypy27Packages = pypy27.pkgs;
