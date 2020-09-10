@@ -5,7 +5,7 @@
 , gdbm
 , lzma
 , ncurses
-, openssl
+, openssl_1_0_2
 , readline
 , sqlite
 , tcl ? null, tk ? null, tix ? null, libX11 ? null, xorgproto ? null, x11Support ? false
@@ -66,7 +66,7 @@ let
   ];
 
   buildInputs = filter (p: p != null) ([
-    zlib bzip2 expat lzma libffi gdbm sqlite readline ncurses openssl ]
+    zlib bzip2 expat lzma libffi gdbm sqlite readline ncurses openssl_1_0_2 ]
     ++ optionals x11Support [ tcl tk libX11 xorgproto ]
     ++ optionals stdenv.isDarwin [ configd ]);
 
@@ -169,8 +169,8 @@ in with passthru; stdenv.mkDerivation {
     "--with-threads"
   ] ++ optionals (sqlite != null && isPy3k) [
     "--enable-loadable-sqlite-extensions"
-  ] ++ optionals (openssl != null) [
-    "--with-openssl=${openssl.dev}"
+  ] ++ optionals (openssl_1_0_2 != null) [
+    "--with-openssl=${openssl_1_0_2.dev}"
   ] ++ optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
     "ac_cv_buggy_getaddrinfo=no"
     # Assume little-endian IEEE 754 floating point when cross compiling
@@ -289,7 +289,7 @@ in with passthru; stdenv.mkDerivation {
   # Enforce that we don't have references to the OpenSSL -dev package, which we
   # explicitly specify in our configure flags above.
   disallowedReferences =
-    stdenv.lib.optionals (openssl != null && !static) [ openssl.dev ]
+    stdenv.lib.optionals (openssl_1_0_2 != null && !static) [ openssl_1_0_2.dev ]
     ++ stdenv.lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
     # Ensure we don't have references to build-time packages.
     # These typically end up in shebangs.
