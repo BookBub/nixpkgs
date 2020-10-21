@@ -68,10 +68,11 @@ in {
     sourceVersion = {
       major = "3";
       minor = "5";
-      patch = "9";
+      patch = "2";
       suffix = "";
     };
-    sha256 = "0jdh9pvx6m6lfz2liwvvhn7vks7qrysqgwn517fkpxb77b33fjn2";
+    sha256 = "0h6a5fr7ram2s483lh0pnmc4ncijb8llnpfdxdcl5dxr01hza400";
+    openssl = openssl_1_0_2;
     inherit (darwin) configd;
     inherit passthruFun;
   };
@@ -107,10 +108,10 @@ in {
     sourceVersion = {
       major = "3";
       minor = "8";
-      patch = "2";
+      patch = "3";
       suffix = "";
     };
-    sha256 = "1ps5v323cp5czfshqjmbsqw7nvrdpcbk06f62jbzaqik4gfffii6";
+    sha256 = "0r2qg4pdvv52ld5dd95fl6lzzsxxxhbsxmymwcphh6624g3mxayz";
     inherit (darwin) configd;
     inherit passthruFun;
   };
@@ -129,7 +130,7 @@ in {
   };
 
   # Minimal versions of Python (built without optional dependencies)
-  python3Minimal = (python37.override {
+  python3Minimal = (python38.override {
     self = python3Minimal;
     pythonForBuild = pkgs.buildPackages.python3Minimal;
     # strip down that python version as much as possible
@@ -146,6 +147,7 @@ in {
     rebuildBytecode = false;
     stripBytecode = true;
     includeSiteCustomize = false;
+    enableOptimizations = false;
   }).overrideAttrs(old: {
     pname = "python3-minimal";
     meta = old.meta // {

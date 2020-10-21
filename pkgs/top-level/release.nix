@@ -89,7 +89,6 @@ let
           meta.description = "Release-critical builds for the Nixpkgs unstable channel";
           constituents =
             [ jobs.tarball
-              jobs.metrics
               jobs.manual
               jobs.lib-tests
               jobs.stdenv.x86_64-linux
@@ -182,6 +181,9 @@ let
       haskellPackages = packagePlatforms pkgs.haskellPackages;
       idrisPackages = packagePlatforms pkgs.idrisPackages;
       agdaPackages = packagePlatforms pkgs.agdaPackages;
+
+      pkgsMusl.stdenv = [ "x86_64-linux" "aarch64-linux" ];
+      pkgsStatic.stdenv = [ "x86_64-linux" "aarch64-linux" ];
 
       tests = packagePlatforms pkgs.tests;
 

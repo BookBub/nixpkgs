@@ -11,18 +11,15 @@
 
 buildGoModule rec {
   pname = "minikube";
-  version = "1.10.1";
+  version = "1.12.1";
 
-  # for -ldflags
-  commit = "63ab801ac27e5742ae442ce36dff7877dcccb278";
-
-  vendorSha256 = "1l9dxn7yy21x4b3cg6l5a08wx2ng8qf531ilg8yf1rznwfwjajrv";
+  vendorSha256 = "0v2lnzdv5nmg4jf10hqyvrsyz5yg7brm4p3gil7n88w6n100phfn";
 
   src = fetchFromGitHub {
     owner = "kubernetes";
     repo = "minikube";
     rev = "v${version}";
-    sha256 = "05lv6k0j0l00s2895fryp027aa40whbf1gf3fhfg0z5d3p9sbprk";
+    sha256 = "0ya6mp081vs48c0nh4nys9z04kz79mjfpm4gs0hlmh2kpa5kmc9h";
   };
 
   nativeBuildInputs = [ go-bindata installShellFiles pkg-config which ];
@@ -30,7 +27,7 @@ buildGoModule rec {
   buildInputs = if stdenv.isDarwin then [ vmnet ] else if stdenv.isLinux then [ libvirt ] else null;
 
   buildPhase = ''
-    make COMMIT=${commit}
+    make COMMIT=${src.rev}
   '';
 
   installPhase = ''
@@ -40,7 +37,7 @@ buildGoModule rec {
     export MINIKUBE_WANTUPDATENOTIFICATION=false
     export MINIKUBE_WANTKUBECTLDOWNLOADMSG=false
 
-    for shell in bash zsh; do
+    for shell in bash zsh fish; do
       $out/bin/minikube completion $shell > minikube.$shell
       installShellCompletion minikube.$shell
     done
