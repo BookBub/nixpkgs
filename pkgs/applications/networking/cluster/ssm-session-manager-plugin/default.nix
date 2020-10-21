@@ -9,7 +9,7 @@ stdenv.mkDerivation rec {
     fetchzip rec {
       name = "sessionmanager-bundle.zip";
       url = "${base_url}/${version}/mac/${name}";
-      sha256 = "0q5wh8f0m282mdclnzppgh2f4zvswq89i52zpdi06qmi2byc33cf";
+      sha256 = "0i5kc9wkn3dv4jbkbmjqf4w581i2n2sfqi42gm3vq28i7dwf0axz";
     }
   else
     fetchurl {
