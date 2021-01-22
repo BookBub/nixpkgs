@@ -8,7 +8,7 @@ let
   } else fetchFromGitHub {
     owner = "99designs";
     repo = name;
-    rev = "v${version}";
+    rev = "v${ver}";
     sha256 = "0892fhjmxnms09bfbjnngnnnli2d4nkwq44fw98yb3d5lbpa1j1j";
   };
 in
