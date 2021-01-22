@@ -1,15 +1,15 @@
-{ stdenv, buildPythonPackage, fetchPypi
+{ lib, stdenv, buildPythonPackage, fetchPypi
 , urllib3, certifi
 , gevent, geventhttpclient, mock, fastimport
 , git, glibcLocales }:
 
 buildPythonPackage rec {
-  version = "0.20.2";
+  version = "0.20.14";
   pname = "dulwich";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "273fa401e11c215ed81a4a0c8474ed06aeae31900974fdd4a87af5df0e458115";
+    sha256 = "21d6ee82708f7c67ce3fdcaf1f1407e524f7f4f7411a410a972faa2176baec0d";
   };
 
   LC_ALL = "en_US.UTF-8";
@@ -21,7 +21,7 @@ buildPythonPackage rec {
 
   doCheck = !stdenv.isDarwin;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Simple Python implementation of the Git file formats and protocols";
     homepage = "https://samba.org/~jelmer/dulwich/";
     license = licenses.gpl2Plus;

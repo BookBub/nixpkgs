@@ -2,22 +2,24 @@
 
 buildGoModule rec {
   pname = "yq-go";
-  version = "3.3.2";
+  version = "4.4.1";
 
   src = fetchFromGitHub {
     owner = "mikefarah";
-    rev = version;
+    rev = "v${version}";
     repo = "yq";
-    sha256 = "1rdpjxnq6cs6gwpp4bijp38b657yzjqcdzf98lhhpbpskjz8k8pp";
+    sha256 = "sha256-U1nMSwWKzPvyvxUx8J50AMB251ET4s9xcSrjGGjkYus=";
   };
 
-  vendorSha256 = "1bjy3qr26zndr3dhh9gd33rhm5gy779525qgzjw4a4mla0p2q6kl";
+  vendorSha256 = "sha256-CUELy6ajaoVzomY5lMen24DFJke3IyFzqWYyF7sws5g=";
+
+  doCheck = false;
 
   nativeBuildInputs = [ installShellFiles ];
 
   postInstall = ''
     for shell in bash fish zsh; do
-      $out/bin/yq shell-completion --variation $shell > yq.$shell
+      $out/bin/yq shell-completion $shell > yq.$shell
       installShellCompletion yq.$shell
     done
   '';

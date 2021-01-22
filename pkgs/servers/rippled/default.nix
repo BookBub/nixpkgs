@@ -1,5 +1,5 @@
-{ stdenv, fetchFromGitHub, fetchgit, fetchurl, runCommand, git, cmake, pkgconfig
-, openssl,  zlib, boost, grpc, c-ares, abseil-cpp, protobuf3_8 }:
+{ lib, stdenv, fetchFromGitHub, fetchgit, fetchurl, runCommand, git, cmake, pkg-config
+, openssl,  zlib, boost, grpc, c-ares, abseil-cpp, protobuf3_8, libnsl }:
 
 let
   sqlite3 = fetchurl rec {
@@ -9,7 +9,7 @@ let
   };
 
   boostSharedStatic = boost.override {
-    enableShared = true; 
+    enableShared = true;
     enabledStatic = true;
   };
 
@@ -31,8 +31,8 @@ let
 
   nudb = fetchgit rec {
     url = "https://github.com/CPPAlliance/NuDB.git";
-    rev = "2.0.1";
-    sha256 = "10hlp2k7pc0c705f8sk0qw6mjfky0k08cjhh262bbjvp9fbdc7r4";
+    rev = "2.0.3";
+    sha256 = "0imd9sh6knydwa3pxa5bbvjs3bmb8650dnsvj04qgns6bynwlqh1";
     leaveDotGit = true;
     fetchSubmodules = true;
     postFetch = "cd $out && git tag ${rev}";
@@ -49,8 +49,8 @@ let
 
   lz4 = fetchgit rec {
     url = "https://github.com/lz4/lz4.git";
-    rev = "v1.8.2";
-    sha256 = "1niv553q60hwn95yflzmrqkp1046hrid13h0yr36lm4fjza21h9w";
+    rev = "v1.9.2";
+    sha256 = "0322xy2vfhxkb8akas7vwajjgcigq1q8l9f5fnfmavcsd6kmxmgg";
     leaveDotGit = true;
     fetchSubmodules = false;
     postFetch = "cd $out && git tag ${rev}";
@@ -58,8 +58,8 @@ let
 
   libarchive = fetchgit rec {
     url = "https://github.com/libarchive/libarchive.git";
-    rev = "v3.3.3";
-    sha256 = "165imgfmizpi4ffpiwfs8gxysn6lw3y1fxj5rga98filkl7hxs31";
+    rev = "v3.4.3";
+    sha256 = "00yrzy2129vr4nfhigd91651984sl447dyfjfz26dmzvna5hwzp1";
     leaveDotGit = true;
     fetchSubmodules = false;
     postFetch = "cd $out && git tag ${rev}";
@@ -116,12 +116,12 @@ let
   };
 in stdenv.mkDerivation rec {
   pname = "rippled";
-  version = "1.5.0";
+  version = "1.6.0";
 
   src = fetchgit {
     url = "https://github.com/ripple/rippled.git";
     rev = version;
-    sha256 = "0nh0x1ygrj3fw558vxbcp0md80qh27yrp3xhdlasrir7h1l2nplv";
+    sha256 = "176i3dm98zp5jllslpzfhh52bd2lapq9i8r7m45v8sg9icvsmyz7";
     leaveDotGit = true;
     fetchSubmodules = true;
   };
@@ -129,8 +129,8 @@ in stdenv.mkDerivation rec {
   hardeningDisable = ["format"];
   cmakeFlags = ["-Dstatic=OFF" "-DBoost_NO_BOOST_CMAKE=ON"];
 
-  nativeBuildInputs = [ pkgconfig cmake git ];
-  buildInputs = [ openssl openssl.dev boostSharedStatic zlib grpc c-ares c-ares.cmake-config abseil-cpp protobuf3_8 ];
+  nativeBuildInputs = [ pkg-config cmake git ];
+  buildInputs = [ openssl openssl.dev boostSharedStatic zlib grpc c-ares c-ares.cmake-config abseil-cpp protobuf3_8 libnsl ];
 
   preConfigure = ''
     export HOME=$PWD
@@ -146,6 +146,9 @@ in stdenv.mkDerivation rec {
     git config --global url."file://${google-test}".insteadOf "${google-test.url}"
     git config --global url."file://${date}".insteadOf "${date.url}"
 
+    substituteInPlace Builds/CMake/deps/Sqlite.cmake --replace "http://www.sqlite.org/2018/sqlite-amalgamation-3260000.zip" ""
+    substituteInPlace Builds/CMake/deps/Sqlite.cmake --replace "https://www2.sqlite.org/2018/sqlite-amalgamation-3260000.zip" ""
+    substituteInPlace Builds/CMake/deps/Sqlite.cmake --replace "http://www2.sqlite.org/2018/sqlite-amalgamation-3260000.zip" ""
     substituteInPlace Builds/CMake/deps/Sqlite.cmake --replace "URL ${sqlite3.url}" "URL ${sqlite3}"
   '';
 
@@ -154,7 +157,7 @@ in stdenv.mkDerivation rec {
     ./rippled --unittest
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Ripple P2P payment network reference server";
     homepage = "https://github.com/ripple/rippled";
     maintainers = with maintainers; [ ehmry offline RaghavSood ];

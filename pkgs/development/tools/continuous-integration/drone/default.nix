@@ -2,16 +2,17 @@
 
 buildGoModule rec {
   name = "drone.io-${version}";
-  version = "1.6.5";
-  goPackagePath = "github.com/drone/drone";
+  version = "1.10.0";
 
-  vendorSha256 = "1dvf8vz3jr9smki3jql0kvd8z8rwdq93y7blbr2yjjfsdvx6lxl1";
+  vendorSha256 = "sha256-cKHX/GnvGELQBfoo0/1UmDQ4Z66GGnnHG7+1CzjinL0=";
+
+  doCheck = false;
 
   src = fetchFromGitHub {
     owner = "drone";
     repo = "drone";
     rev = "v${version}";
-    sha256 = "05cgd72qyss836fby0adhrm5p8g7639psk2yslhg6pmz0cqfbq9m";
+    sha256 = "sha256-12Jac+mXWdUX8gWvmpdO9ROv7Bi0YzvyqnNDVNJOr34=";
   };
 
   meta = with stdenv.lib; {

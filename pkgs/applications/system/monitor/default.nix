@@ -1,5 +1,6 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
+, nix-update-script
 , meson
 , ninja
 , vala
@@ -55,12 +56,12 @@ stdenv.mkDerivation rec {
   '';
 
   passthru = {
-    updateScript = pantheon.updateScript {
+    updateScript = nix-update-script {
       attrPath = pname;
     };
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Manage processes and monitor system resources";
     longDescription = ''
       Manage processes and monitor system resources.

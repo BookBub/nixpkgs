@@ -1,4 +1,4 @@
-{ stdenv, buildGoModule, fetchFromGitHub }:
+{ lib, stdenv, buildGoModule, fetchFromGitHub }:
 
 buildGoModule rec {
   pname = "richgo";
@@ -13,10 +13,12 @@ buildGoModule rec {
 
   vendorSha256 = "1nvk3akjwfcbvif1w4cglsqplcajlwq3mnvk9b75nmn9qaqfbfjf";
 
+  doCheck = false;
+
   subPackages = [ "." ];
 
-  meta = with stdenv.lib; {
-    description = "Enrich `go test` outputs with text decorations.";
+  meta = with lib; {
+    description = "Enrich `go test` outputs with text decorations";
     homepage = "https://github.com/kyoh86/richgo";
     license = licenses.mit;
     maintainers = with maintainers; [ rvolosatovs ];

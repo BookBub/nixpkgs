@@ -1,5 +1,6 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
+, nix-update-script
 , gnome3
 }:
 
@@ -23,7 +24,14 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  meta = with stdenv.lib; {
+  passthru = {
+    updateScript = nix-update-script {
+      attrPath = "gnomeExtensions.${pname}";
+    };
+  };
+
+
+  meta = with lib; {
     description = "A simple MPRIS indicator button for GNOME Shell";
     license = licenses.gpl3;
     maintainers = with maintainers; [ worldofpeace ];

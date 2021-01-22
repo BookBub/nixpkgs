@@ -1,14 +1,14 @@
-{ stdenv, fetchFromGitHub, buildGoPackage, installShellFiles }:
+{ lib, stdenv, fetchFromGitHub, buildGoPackage, installShellFiles, nixosTests }:
 
 buildGoPackage rec {
   pname = "vault";
-  version = "1.4.3";
+  version = "1.6.1";
 
   src = fetchFromGitHub {
     owner = "hashicorp";
     repo = "vault";
     rev = "v${version}";
-    sha256 = "145zvkh3n503l7zkqkw8laqmqcwd0igd42s4xj0nw78xj2ppj9b8";
+    sha256 = "1pgyyl2zgnr3wy4k8c5xsk2s5dpl97xdfq67lpfss7fz1bij8x47";
   };
 
   goPackagePath = "github.com/hashicorp/vault";
@@ -17,19 +17,19 @@ buildGoPackage rec {
 
   nativeBuildInputs = [ installShellFiles ];
 
-  buildFlagsArray = [
-    "-tags='vault'"
-    "-ldflags=\"-X github.com/hashicorp/vault/sdk/version.GitCommit='v${version}'\""
-  ];
+  buildFlagsArray = [ "-tags=vault" "-ldflags=-s -w -X ${goPackagePath}/sdk/version.GitCommit=${src.rev}" ];
 
   postInstall = ''
     echo "complete -C $out/bin/vault vault" > vault.bash
     installShellCompletion vault.bash
   '';
 
-  meta = with stdenv.lib; {
+  passthru.tests.vault = nixosTests.vault;
+
+  meta = with lib; {
     homepage = "https://www.vaultproject.io/";
     description = "A tool for managing secrets";
+    changelog = "https://github.com/hashicorp/vault/blob/v${version}/CHANGELOG.md";
     platforms = platforms.linux ++ platforms.darwin;
     license = licenses.mpl20;
     maintainers = with maintainers; [ rushmorem lnl7 offline pradeepchhetri ];

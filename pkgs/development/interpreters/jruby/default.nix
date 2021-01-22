@@ -2,15 +2,15 @@
 
 let
 # The version number here is whatever is reported by the RUBY_VERSION string
-rubyVersion = callPackage ../ruby/ruby-version.nix {} "2" "3" "3" "";
+rubyVersion = callPackage ../ruby/ruby-version.nix {} "2" "5" "7" "";
 jruby = stdenv.mkDerivation rec {
   pname = "jruby";
 
-  version = "9.2.12.0";
+  version = "9.2.14.0";
 
   src = fetchurl {
     url = "https://s3.amazonaws.com/jruby.org/downloads/${version}/jruby-bin-${version}.tar.gz";
-    sha256 = "013c1q1n525y9ghp369z1jayivm9bw8c1x0g5lz7479hqhj62zrh";
+    sha256 = "1dg0fz9b8m1k0sypvpxnf4xjqwc0pyy35xw4rsg4a7pha4jkprrj";
   };
 
   buildInputs = [ makeWrapper ];
@@ -40,17 +40,22 @@ jruby = stdenv.mkDerivation rec {
      EOF
   '';
 
+  postFixup = ''
+    PATH=$out/bin:$PATH patchShebangs $out/bin
+  '';
+
   passthru = rec {
     rubyEngine = "jruby";
     gemPath = "lib/${rubyEngine}/gems/${rubyVersion.libDir}";
     libPath = "lib/${rubyEngine}/${rubyVersion.libDir}";
   };
 
-  meta = {
+  meta = with stdenv.lib; {
     description = "Ruby interpreter written in Java";
     homepage = "http://jruby.org/";
-    license = with stdenv.lib.licenses; [ cpl10 gpl2 lgpl21 ];
-    platforms = stdenv.lib.platforms.unix;
+    license = with licenses; [ cpl10 gpl2 lgpl21 ];
+    platforms = platforms.unix;
+    maintainers = [ maintainers.fzakaria ];
   };
 };
 in jruby.overrideAttrs (oldAttrs: {

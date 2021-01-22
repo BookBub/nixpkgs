@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , fetchurl
 , cmake
 , boost
@@ -34,8 +34,8 @@ stdenv.mkDerivation rec {
 
   meta = {
     homepage = "https://dev.mysql.com/downloads/connector/cpp/";
-    description = "C++ library for connecting to mysql servers.";
-    license = stdenv.lib.licenses.gpl2;
-    platforms = stdenv.lib.platforms.unix;
+    description = "C++ library for connecting to mysql servers";
+    license = lib.licenses.gpl2;
+    platforms = lib.platforms.unix;
   };
 }

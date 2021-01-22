@@ -1,4 +1,4 @@
-{ stdenv, lib, fetchurl, bash, pkgconfig, autoconf, cpio, file, which, unzip
+{ stdenv, lib, fetchurl, bash, pkg-config, autoconf, cpio, file, which, unzip
 , zip, perl, cups, freetype, alsaLib, libjpeg, giflib, libpng, zlib, lcms2
 , libX11, libICE, libXrender, libXext, libXt, libXtst, libXi, libXinerama
 , libXcursor, libXrandr, fontconfig, openjdk11
@@ -22,7 +22,7 @@ let
       sha256 = "1ndlxmikyy298z7lqpr1bd0zxq7yx6xidj8y3c8mw9m9fy64h9c7";
     };
 
-    nativeBuildInputs = [ pkgconfig autoconf ];
+    nativeBuildInputs = [ pkg-config autoconf ];
     buildInputs = [
       cpio file which unzip zip perl zlib cups freetype alsaLib libjpeg giflib
       libpng zlib lcms2 libX11 libICE libXrender libXext libXtst libXt libXtst
@@ -55,6 +55,7 @@ let
 
     configureFlags = [
       "--with-boot-jdk=${openjdk11.home}"
+      "--with-version-pre="
       "--enable-unlimited-crypto"
       "--with-native-debug-symbols=internal"
       "--with-libjpeg=system"
@@ -150,6 +151,7 @@ let
     passthru = {
       architecture = "";
       home = "${openjdk}/lib/openjdk";
+      inherit gtk3;
     };
   };
 in openjdk

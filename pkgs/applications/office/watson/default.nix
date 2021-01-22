@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub, pythonPackages, installShellFiles }:
+{ lib, stdenv, fetchFromGitHub, pythonPackages, installShellFiles }:
 
 with pythonPackages;
 
@@ -26,10 +26,10 @@ buildPythonApplication rec {
   propagatedBuildInputs = [ arrow click click-didyoumean requests ];
   nativeBuildInputs = [ installShellFiles ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://tailordev.github.io/Watson/";
     description = "A wonderful CLI to track your time!";
     license = licenses.mit;
-    maintainers = with maintainers; [ mguentner nathyong geistesk ];
+    maintainers = with maintainers; [ mguentner nathyong oxzi ];
   };
 }

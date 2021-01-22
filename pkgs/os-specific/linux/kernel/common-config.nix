@@ -10,14 +10,14 @@
 # hardware problems with a new one.
 
 # Configuration
-{ stdenv, version
+{ lib, stdenv, version
 
 , features ? { grsecurity = false; xen_dom0 = false; }
 }:
 
-with stdenv.lib;
-with stdenv.lib.kernel;
-with (stdenv.lib.kernel.whenHelpers version);
+with lib;
+with lib.kernel;
+with (lib.kernel.whenHelpers version);
 
 let
 
@@ -91,6 +91,8 @@ let
     scheduler = {
       IOSCHED_CFQ = whenOlder "5.0" yes; # Removed in 5.0-RC1
       BLK_CGROUP  = yes; # required by CFQ"
+      BLK_CGROUP_IOLATENCY = whenAtLeast "4.19" yes;
+      BLK_CGROUP_IOCOST = whenAtLeast "5.4" yes;
       IOSCHED_DEADLINE = whenOlder "5.0" yes; # Removed in 5.0-RC1
       MQ_IOSCHED_DEADLINE = whenAtLeast "4.11" yes;
       BFQ_GROUP_IOSCHED = whenAtLeast "4.12" yes;
@@ -130,6 +132,7 @@ let
       IP_MROUTE_MULTIPLE_TABLES   = yes;
       IP_MULTICAST                = yes;
       IP_MULTIPLE_TABLES          = yes;
+      IPV6                        = yes;
       IPV6_ROUTER_PREF            = yes;
       IPV6_ROUTE_INFO             = yes;
       IPV6_OPTIMISTIC_DAD         = yes;
@@ -193,6 +196,11 @@ let
       INET_UDP_DIAG     = module;
       INET_RAW_DIAG     = whenAtLeast "4.14" module;
       INET_DIAG_DESTROY = whenAtLeast "4.9" yes;
+
+      # enable multipath-tcp
+      MPTCP           = whenAtLeast "5.6" yes;
+      MPTCP_IPV6      = whenAtLeast "5.6" yes;
+      INET_MPTCP_DIAG = whenAtLeast "5.9" module;
     };
 
     wireless = {
@@ -242,6 +250,8 @@ let
       DRM_AMDGPU_SI = whenAtLeast "4.9" yes;
       # (stable) amdgpu support for bonaire and newer chipsets
       DRM_AMDGPU_CIK = whenAtLeast "4.9" yes;
+      # Allow device firmware updates
+      DRM_DP_AUX_CHARDEV = whenAtLeast "4.6" yes;
     } // optionalAttrs (stdenv.hostPlatform.system == "x86_64-linux") {
       # Intel GVT-g graphics virtualization supports 64-bit only
       DRM_I915_GVT = whenAtLeast "4.16" yes;
@@ -411,7 +421,10 @@ let
       SECURITY_APPARMOR                = yes;
       DEFAULT_SECURITY_APPARMOR        = yes;
 
-      SECURITY_LOCKDOWN_LSM            = whenAtLeast "5.4" yes;
+      MODULE_SIG            = no; # r13y, generates a random key during build and bakes it in
+      # Depends on MODULE_SIG and only really helps when you sign your modules
+      # and enforce signatures which we don't do by default.
+      SECURITY_LOCKDOWN_LSM = option no;
     } // optionalAttrs (!stdenv.hostPlatform.isAarch32) {
 
       # Detect buffer overflows on the stack
@@ -649,7 +662,10 @@ let
 
       MODULE_COMPRESS    = yes;
       MODULE_COMPRESS_XZ = yes;
-      KERNEL_XZ          = yes;
+
+      # use zstd for kernel compression if newer than 5.9, else xz.
+      KERNEL_XZ          = whenOlder "5.9" yes;
+      KERNEL_ZSTD        = whenAtLeast "5.9" yes;
 
       SYSVIPC            = yes;  # System-V IPC
 
@@ -770,6 +786,8 @@ let
       X86_CHECK_BIOS_CORRUPTION = yes;
       X86_MCE                   = yes;
 
+      RAS = yes; # Needed for EDAC support
+
       # Our initrd init uses shebang scripts, so can't be modular.
       BINFMT_SCRIPT = yes;
       # For systemd-binfmt
@@ -812,6 +830,12 @@ let
 
       # See comments on https://github.com/NixOS/nixpkgs/commit/9b67ea9106102d882f53d62890468071900b9647
       CRYPTO_AEGIS128_SIMD = whenAtLeast "5.4" no;
+
+      # Distros should configure the default as a kernel option.
+      # We previously defined it on the kernel command line as cma=
+      # The kernel command line will override a platform-specific configuration from its device tree.
+      # https://github.com/torvalds/linux/blob/856deb866d16e29bd65952e0289066f6078af773/kernel/dma/contiguous.c#L35-L44
+      CMA_SIZE_MBYTES = freeform "32";
     };
   };
 in

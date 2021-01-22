@@ -108,6 +108,15 @@ in
       '';
     };
 
+    postBuildCommands = mkOption {
+      example = literalExample "'' dd if=\${pkgs.myBootLoader}/SPL of=$img bs=1024 seek=1 conv=notrunc ''";
+      default = "";
+      description = ''
+        Shell commands to run after the image is built.
+        Can be used for boards requiring to dd u-boot SPL before actual partitions.
+      '';
+    };
+
     compressImage = mkOption {
       type = types.bool;
       default = true;
@@ -138,10 +147,10 @@ in
     sdImage.storePaths = [ config.system.build.toplevel ];
 
     system.build.sdImage = pkgs.callPackage ({ stdenv, dosfstools, e2fsprogs,
-    mtools, libfaketime, utillinux, zstd }: stdenv.mkDerivation {
+    mtools, libfaketime, util-linux, zstd }: stdenv.mkDerivation {
       name = config.sdImage.imageName;
 
-      nativeBuildInputs = [ dosfstools e2fsprogs mtools libfaketime utillinux zstd ];
+      nativeBuildInputs = [ dosfstools e2fsprogs mtools libfaketime util-linux zstd ];
 
       inherit (config.sdImage) compressImage;
 
@@ -197,6 +206,9 @@ in
         # Verify the FAT partition before copying it.
         fsck.vfat -vn firmware_part.img
         dd conv=notrunc if=firmware_part.img of=$img seek=$START count=$SECTORS
+
+        ${config.sdImage.postBuildCommands}
+
         if test -n "$compressImage"; then
             zstd -T$NIX_BUILD_CORES --rm $img
         fi
@@ -209,11 +221,12 @@ in
         set -euo pipefail
         set -x
         # Figure out device names for the boot device and root filesystem.
-        rootPart=$(${pkgs.utillinux}/bin/findmnt -n -o SOURCE /)
+        rootPart=$(${pkgs.util-linux}/bin/findmnt -n -o SOURCE /)
         bootDevice=$(lsblk -npo PKNAME $rootPart)
+        partNum=$(lsblk -npo MAJ:MIN $rootPart | ${pkgs.gawk}/bin/awk -F: '{print $2}')
 
         # Resize the root partition and the filesystem to fit the disk
-        echo ",+," | sfdisk -N2 --no-reread $bootDevice
+        echo ",+," | sfdisk -N$partNum --no-reread $bootDevice
         ${pkgs.parted}/bin/partprobe
         ${pkgs.e2fsprogs}/bin/resize2fs $rootPart
 

@@ -1,6 +1,7 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
-, pkgconfig
+, nix-update-script
+, pkg-config
 , meson
 , ninja
 , python3
@@ -42,7 +43,7 @@ stdenv.mkDerivation rec {
     gtk-doc
     meson
     ninja
-    pkgconfig
+    pkg-config
     gobject-introspection
     python3
   ];
@@ -62,9 +63,13 @@ stdenv.mkDerivation rec {
     tests = {
       installedTests = nixosTests.installed-tests.graphene;
     };
+
+    updateScript = nix-update-script {
+      attrPath = pname;
+    };
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A thin layer of graphic data types";
     homepage = "https://ebassi.github.com/graphene";
     license = licenses.mit;

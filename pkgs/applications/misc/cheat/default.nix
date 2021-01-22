@@ -1,15 +1,15 @@
-{ stdenv, fetchFromGitHub
+{ lib, stdenv, fetchFromGitHub
 , buildGoModule, installShellFiles }:
 
 buildGoModule rec {
   pname = "cheat";
-  version = "4.0.0";
+  version = "4.2.0";
 
   src = fetchFromGitHub {
     owner = "cheat";
     repo = "cheat";
     rev = version;
-    sha256 = "0j9w2rm8imb15njj7334xl6w0fgjvfqnrfvdq4zfsrwzl67ds86l";
+    sha256 = "sha256-Q/frWu82gB15LEzwYCbJr7k0yZ+AXBvcPWxoevSpeqU=";
   };
 
   subPackages = [ "cmd/cheat" ];
@@ -23,7 +23,9 @@ buildGoModule rec {
 
   vendorSha256 = null;
 
-  meta = with stdenv.lib; {
+  doCheck = false;
+
+  meta = with lib; {
     description = "Create and view interactive cheatsheets on the command-line";
     maintainers = with maintainers; [ mic92 ];
     license = with licenses; [ gpl3 mit ];

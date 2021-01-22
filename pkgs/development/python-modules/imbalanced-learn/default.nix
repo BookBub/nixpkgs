@@ -1,34 +1,34 @@
-{ stdenv, buildPythonPackage, fetchPypi, isPy27
-, nose
+{ lib, stdenv, buildPythonPackage, fetchPypi, isPy27
 , pandas
-, pytest
+, pytestCheckHook
 , scikitlearn
 , tensorflow
 }:
 
 buildPythonPackage rec {
   pname = "imbalanced-learn";
-  version = "0.6.2";
+  version = "0.7.0";
   disabled = isPy27; # scikit-learn>=0.21 doesn't work on python2
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "942b9a7f2e1df831097fbee587c5c90a4cc6afa6105b23d3e30d8798f1a9b17d";
+    sha256 = "da59de0d1c0fa66f62054dd9a0a295a182563aa1abbb3bf9224a3678fcfe8fa4";
   };
 
   propagatedBuildInputs = [ scikitlearn ];
-  checkInputs = [ nose pytest pandas ];
-  checkPhase = ''
+  checkInputs = [ pytestCheckHook pandas ];
+  preCheck = ''
     export HOME=$TMPDIR
-    # skip some tests that fail because of minimal rounding errors
-    # or very large dependencies (keras + tensorflow)
-    py.test imblearn -k 'not estimator \
-                         and not classification \
-                         and not _generator \
-                         and not show_versions'
   '';
+  disabledTests = [
+    "estimator"
+    "classification"
+    "_generator"
+    "show_versions"
+    "test_make_imbalanced_iris"
+  ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Library offering a number of re-sampling techniques commonly used in datasets showing strong between-class imbalance";
     homepage = "https://github.com/scikit-learn-contrib/imbalanced-learn";
     license = licenses.mit;

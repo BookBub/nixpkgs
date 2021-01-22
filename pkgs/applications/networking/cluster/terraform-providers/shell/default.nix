@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub, buildGoModule }:
+{ lib, stdenv, fetchFromGitHub, buildGoModule }:
 buildGoModule rec {
   pname = "terraform-provider-shell";
   version = "1.6.0";
@@ -12,13 +12,17 @@ buildGoModule rec {
 
   vendorSha256 = "1p2ja6cw3dl7mx41svri6frjpgb9pxsrl7sq0rk1d3sviw0f88sg";
 
+  doCheck = false;
+
   subPackages = [ "." ];
 
   # Terraform allows checking the provider versions, but this breaks
   # if the versions are not provided via file paths.
   postInstall = "mv $out/bin/${pname}{,_v${version}}";
 
-  meta = with stdenv.lib; {
+  passthru.provider-source-address = "registry.terraform.io/scottwinkler/shell";
+
+  meta = with lib; {
     inherit (src.meta) homepage;
     description = "Terraform provider for executing shell commands and saving output to state file";
     changelog = "https://github.com/scottwinkler/terraform-provider-shell/releases/tag/v${version}";

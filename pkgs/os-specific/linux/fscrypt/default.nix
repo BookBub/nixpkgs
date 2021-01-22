@@ -1,4 +1,4 @@
-{ stdenv, buildGoModule, fetchFromGitHub, gnum4, pam, fscrypt-experimental }:
+{ lib, stdenv, buildGoModule, fetchFromGitHub, gnum4, pam, fscrypt-experimental }:
 
 # Don't use this for anything important yet!
 
@@ -21,6 +21,8 @@ buildGoModule rec {
 
   vendorSha256 = "0yak221mlyfacvlsaq9g3xiyk94n94vqgkbaji8d21pi8hhr38m6";
 
+  doCheck = false;
+
   nativeBuildInputs = [ gnum4 ];
   buildInputs = [ pam ];
 
@@ -32,11 +34,7 @@ buildGoModule rec {
     make install
   '';
 
-  preFixup = ''
-    remove-references-to -t ${fscrypt-experimental.go} $out/lib/security/pam_fscrypt.so
-  '';
-
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description =
       "A high-level tool for the management of Linux filesystem encryption";
     longDescription = ''

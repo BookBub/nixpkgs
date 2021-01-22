@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub, buildGoModule }:
+{ lib, stdenv, fetchFromGitHub, buildGoModule }:
 buildGoModule rec {
   pname = "terraform-provider-elasticsearch";
   version = "0.7.0";
@@ -12,13 +12,15 @@ buildGoModule rec {
 
   vendorSha256 = "1rdvyypdl3fk6af66gfjhyl271cnlx5xgrl1w68sc6sbvq00bqkd";
 
+  doCheck = false;
+
   subPackages = [ "." ];
 
   # Terraform allow checking the provider versions, but this breaks
   # if the versions are not provided via file paths.
   postInstall = "mv $out/bin/terraform-provider-elasticsearch{,_v${version}}";
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Terraform provider for elasticsearch";
     homepage = "https://github.com/phillbaker/terraform-provider-elasticsearch";
     license = licenses.mpl20;

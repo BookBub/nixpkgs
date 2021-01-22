@@ -1,6 +1,6 @@
 { lib, stdenv
 , fetchurl, fetchFromGitHub, fetchpatch
-, cmake, pkgconfig, unzip, zlib, pcre, hdf5
+, cmake, pkg-config, unzip, zlib, pcre, hdf5
 , glog, boost, gflags, protobuf
 , config
 
@@ -9,7 +9,6 @@
 , enableTIFF      ? true, libtiff
 , enableWebP      ? true, libwebp
 , enableEXR ?     !stdenv.isDarwin, openexr, ilmbase
-, enableJPEG2K    ? false, jasper  # disable jasper by default (many CVE)
 , enableEigen     ? true, eigen
 , enableOpenblas  ? true, openblas, blas, lapack
 , enableContrib   ? true
@@ -32,10 +31,8 @@
 , enableDC1394    ? false, libdc1394
 , enableDocs      ? false, doxygen, graphviz-nox
 
-, AVFoundation, Cocoa, VideoDecodeAcceleration, bzip2
+, AVFoundation, Cocoa, VideoDecodeAcceleration, CoreMedia, MediaToolbox, bzip2
 }:
-
-assert blas.implementation == "openblas" && lapack.implementation == "openblas";
 
 let
   version = "4.3.0";
@@ -165,15 +162,11 @@ stdenv.mkDerivation {
 
   # This prevents cmake from using libraries in impure paths (which
   # causes build failure on non NixOS)
-  # Also, work around https://github.com/NixOS/nixpkgs/issues/26304 with
-  # what appears to be some stray headers in dnn/misc/tensorflow
-  # in contrib when generating the Python bindings:
   patches = [
     ./cmake-don-t-use-OpenCVFindOpenEXR.patch
   ] ++ lib.optional enableCuda ./cuda_opt_flow.patch;
   postPatch = ''
     sed -i '/Add these standard paths to the search paths for FIND_LIBRARY/,/^\s*$/{d}' CMakeLists.txt
-    sed -i -e 's|if len(decls) == 0:|if len(decls) == 0 or "opencv2/" not in hdr:|' ./modules/python/src2/gen2.py
   '';
 
   preConfigure =
@@ -203,7 +196,6 @@ stdenv.mkDerivation {
     ++ lib.optional enableTIFF libtiff
     ++ lib.optional enableWebP libwebp
     ++ lib.optionals enableEXR [ openexr ilmbase ]
-    ++ lib.optional enableJPEG2K jasper
     ++ lib.optional enableFfmpeg ffmpeg_3
     ++ lib.optionals (enableFfmpeg && stdenv.isDarwin)
                      [ VideoDecodeAcceleration bzip2 ]
@@ -219,12 +211,12 @@ stdenv.mkDerivation {
     ++ lib.optionals enableTesseract [ tesseract leptonica ]
     ++ lib.optional enableTbb tbb
     ++ lib.optionals enableCuda [ cudatoolkit nvidia-optical-flow-sdk ]
-    ++ lib.optionals stdenv.isDarwin [ bzip2 AVFoundation Cocoa VideoDecodeAcceleration ]
+    ++ lib.optionals stdenv.isDarwin [ bzip2 AVFoundation Cocoa VideoDecodeAcceleration CoreMedia MediaToolbox ]
     ++ lib.optionals enableDocs [ doxygen graphviz-nox ];
 
   propagatedBuildInputs = lib.optional enablePython pythonPackages.numpy;
 
-  nativeBuildInputs = [ cmake pkgconfig unzip ];
+  nativeBuildInputs = [ cmake pkg-config unzip ];
 
   NIX_CFLAGS_COMPILE = lib.optionalString enableEXR "-I${ilmbase.dev}/include/OpenEXR";
 
@@ -242,7 +234,6 @@ stdenv.mkDerivation {
     "-DBUILD_DOCS=${printEnabled enableDocs}"
     (opencvFlag "IPP" enableIpp)
     (opencvFlag "TIFF" enableTIFF)
-    (opencvFlag "JASPER" enableJPEG2K)
     (opencvFlag "WEBP" enableWebP)
     (opencvFlag "JPEG" enableJPEG)
     (opencvFlag "PNG" enablePNG)
@@ -258,12 +249,9 @@ stdenv.mkDerivation {
   ] ++ lib.optionals stdenv.isDarwin [
     "-DWITH_OPENCL=OFF"
     "-DWITH_LAPACK=OFF"
-    "-DBUILD_opencv_videoio=OFF"
   ] ++ lib.optionals enablePython [
     "-DOPENCV_SKIP_PYTHON_LOADER=ON"
   ];
-
-  enableParallelBuilding = true;
 
   postBuild = lib.optionalString enableDocs ''
     make doxygen
@@ -290,7 +278,7 @@ stdenv.mkDerivation {
 
   passthru = lib.optionalAttrs enablePython { pythonPath = []; };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Open Computer Vision Library with more than 500 algorithms";
     homepage = "https://opencv.org/";
     license = with licenses; if enableUnfree then unfree else bsd3;

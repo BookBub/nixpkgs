@@ -18,6 +18,11 @@ lib.mapAttrs (n: v: v // { shortName = n; }) {
     fullName = "Abstyles License";
   };
 
+  afl20 = spdx {
+    spdxId = "AFL-2.0";
+    fullName = "Academic Free License v2.0";
+  };
+
   afl21 = spdx {
     spdxId = "AFL-2.1";
     fullName = "Academic Free License v2.1";
@@ -85,6 +90,11 @@ lib.mapAttrs (n: v: v // { shortName = n; }) {
     fullName = ''Beerware License'';
   };
 
+  blueOak100 = spdx {
+    spdxId = "BlueOak-1.0.0";
+    fullName = "Blue Oak Model License 1.0.0";
+  };
+
   bsd0 = spdx {
     spdxId = "0BSD";
     fullName = "BSD Zero Clause License";
@@ -108,6 +118,11 @@ lib.mapAttrs (n: v: v // { shortName = n; }) {
   bsdOriginal = spdx {
     spdxId = "BSD-4-Clause";
     fullName = ''BSD 4-clause "Original" or "Old" License'';
+  };
+
+  bsdProtection = spdx {
+    spdxId = "BSD-Protection";
+    fullName = "BSD Protection License";
   };
 
   bsl11 = {
@@ -382,6 +397,11 @@ lib.mapAttrs (n: v: v // { shortName = n; }) {
     fullName = "Historic Permission Notice and Disclaimer";
   };
 
+  hpndSellVariant = spdx {
+    fullName = "Historical Permission Notice and Disclaimer - sell variant";
+    spdxId = "HPND-sell-variant";
+  };
+
   # Intel's license, seems free
   iasl = {
     fullName = "iASL";
@@ -426,15 +446,16 @@ lib.mapAttrs (n: v: v // { shortName = n; }) {
   };
 
   # Proprietary binaries; free to redistribute without modification.
+  databricks = {
+    fullName = "Databricks Proprietary License";
+    url = "https://pypi.org/project/databricks-connect";
+    free = false;
+  };
+
   issl = {
     fullName = "Intel Simplified Software License";
     url = "https://software.intel.com/en-us/license/intel-simplified-software-license";
     free = false;
-  };
-
-  jasper = spdx {
-    spdxId = "JasPer-2.0";
-    fullName = "JasPer License";
   };
 
   lgpl2Only = spdx {
@@ -602,6 +623,12 @@ lib.mapAttrs (n: v: v // { shortName = n; }) {
     fullName = "Open Software License 3.0";
   };
 
+  parity70 = spdx {
+    spdxId = "Parity-7.0.0";
+    fullName = "Parity Public License 7.0.0";
+    url = "https://paritylicense.com/versions/7.0.0.html";
+  };
+
   php301 = spdx {
     spdxId = "PHP-3.01";
     fullName = "PHP License v3.01";
@@ -631,6 +658,12 @@ lib.mapAttrs (n: v: v // { shortName = n; }) {
   purdueBsd = {
     fullName = " Purdue BSD-Style License"; # also know as lsof license
     url = "https://enterprise.dejacode.com/licenses/public/purdue-bsd";
+  };
+
+  prosperity30 = {
+    fullName = "Prosperity-3.0.0";
+    free = false;
+    url = "https://prosperitylicense.com/versions/3.0.0.html";
   };
 
   qhull = spdx {
@@ -784,14 +817,54 @@ lib.mapAttrs (n: v: v // { shortName = n; }) {
   };
 } // {
   # TODO: remove legacy aliases
-  agpl3 = lib.licenses.agpl3Only;
-  fdl11 = lib.licenses.fdl11Only;
-  fdl12 = lib.licenses.fdl12Only;
-  fdl13 = lib.licenses.fdl13Only;
-  gpl1 = lib.licenses.gpl1Only;
-  gpl2 = lib.licenses.gpl2Only;
-  gpl3 = lib.licenses.gpl3Only;
-  lgpl2 = lib.licenses.lgpl2Only;
-  lgpl21 = lib.licenses.lgpl21Only;
-  lgpl3 = lib.licenses.lgpl3Only;
+  agpl3 = spdx {
+    spdxId = "AGPL-3.0";
+    fullName = "GNU Affero General Public License v3.0";
+    deprecated = true;
+  };
+  fdl11 = spdx {
+    spdxId = "GFDL-1.1";
+    fullName = "GNU Free Documentation License v1.1";
+    deprecated = true;
+  };
+  fdl12 = spdx {
+    spdxId = "GFDL-1.2";
+    fullName = "GNU Free Documentation License v1.2";
+    deprecated = true;
+  };
+  fdl13 = spdx {
+    spdxId = "GFDL-1.3";
+    fullName = "GNU Free Documentation License v1.3";
+    deprecated = true;
+  };
+  gpl1 = spdx {
+    spdxId = "GPL-1.0";
+    fullName = "GNU General Public License v1.0";
+    deprecated = true;
+  };
+  gpl2 = spdx {
+    spdxId = "GPL-2.0";
+    fullName = "GNU General Public License v2.0";
+    deprecated = true;
+  };
+  gpl3 = spdx {
+    spdxId = "GPL-3.0";
+    fullName = "GNU General Public License v3.0";
+    deprecated = true;
+  };
+  lgpl2 = spdx {
+    spdxId = "LGPL-2.0";
+    fullName = "GNU Library General Public License v2";
+    deprecated = true;
+  };
+  lgpl21 = spdx {
+    spdxId = "LGPL-2.1";
+    fullName = "GNU Lesser General Public License v2.1";
+    deprecated = true;
+  };
+  lgpl3 = spdx {
+    spdxId = "LGPL-3.0";
+    fullName = "GNU Lesser General Public License v3.0";
+    deprecated = true;
+  };
 }

@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , buildPythonPackage
 , fetchPypi
 , isPy27
@@ -7,13 +7,13 @@
 }:
 
 buildPythonPackage rec {
-  version = "2.4.0";
+  version = "3.1.0";
   pname = "humanize";
   disabled = isPy27; # setup.py no longer compatible
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "42ae7d54b398c01bd100847f6cb0fc9e381c21be8ad3f8e2929135e48dbff026";
+    sha256 = "fd3eb915310335c63a54d4507289ecc7b3a7454cd2c22ac5086d061a3cbfd592";
   };
 
   nativeBuildInputs = [ setuptools_scm ];
@@ -21,7 +21,7 @@ buildPythonPackage rec {
 
   doCheck = false;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Python humanize utilities";
     homepage = "https://github.com/jmoiron/humanize";
     license = licenses.mit;

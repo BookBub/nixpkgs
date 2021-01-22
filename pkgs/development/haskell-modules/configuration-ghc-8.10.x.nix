@@ -57,28 +57,13 @@ self: super: {
     };
   });
 
-  # Deviate from Stackage LTS-15.x to fix the build.
-  haddock-library = self.haddock-library_1_9_0;
-
   # Jailbreak to fix the build.
   base-noprelude = doJailbreak super.base-noprelude;
-  pandoc = doJailbreak super.pandoc;
   system-fileio = doJailbreak super.system-fileio;
   unliftio-core = doJailbreak super.unliftio-core;
 
-  # Use the latest version to fix the build.
-  lens = self.lens_4_19_2;
-  optics-core = self.optics-core_0_3;
-  repline = self.repline_0_4_0_0;
-  singletons = self.singletons_2_7;
-  th-desugar = self.th-desugar_1_11;
-
-  # `ghc-lib-parser-ex` (see conditionals in its `.cabal` file) does not need
-  # the `ghc-lib-parser` dependency on GHC >= 8.8. However, because we have
-  # multiple verions of `ghc-lib-parser(-ex)` available, and the default ones
-  # are older ones, those older ones will complain. Because we have a newer
-  # GHC, we can just set the dependency to `null` as it is not used.
-  ghc-lib-parser-ex = super.ghc-lib-parser-ex.override { ghc-lib-parser = null; };
+  # Jailbreaking because monoidal-containers hasn‘t bumped it's base dependency for 8.10.
+  monoidal-containers = doJailbreak super.monoidal-containers;
 
   # Jailbreak to fix the build.
   brick = doJailbreak super.brick;
@@ -86,6 +71,7 @@ self: super: {
   serialise = doJailbreak super.serialise;
   setlocale = doJailbreak super.setlocale;
   shellmet = doJailbreak super.shellmet;
+  shower = doJailbreak super.shower;
 
   # The shipped Setup.hs file is broken.
   csv = overrideCabal super.csv (drv: { preCompileBuildDriver = "rm Setup.hs"; });
@@ -97,18 +83,20 @@ self: super: {
     sha256 = "0rgzrq0513nlc1vw7nw4km4bcwn4ivxcgi33jly4a7n3c1r32v1f";
   });
 
-  # Only 0.8 is compatible with ghc 8.10 https://hackage.haskell.org/package/apply-refact/changelog
-  apply-refact = super.apply-refact_0_8_0_0;
-
-  # https://github.com/commercialhaskell/pantry/issues/21
-  pantry = appendPatch super.pantry (pkgs.fetchpatch {
-    name = "add-cabal-3.2.x-support.patch";
-    url = "https://patch-diff.githubusercontent.com/raw/commercialhaskell/pantry/pull/22.patch";
-    sha256 = "198hsfjsy83s7rp71llf05cwa3vkm74g73djg5p4sk4awm9s6vf2";
-    excludes = ["package.yaml"];
-  });
-
   # hnix 0.9.0 does not provide an executable for ghc < 8.10, so define completions here for now.
-  hnix = generateOptparseApplicativeCompletion "hnix" super.hnix;
+  hnix = generateOptparseApplicativeCompletion "hnix"
+    (overrideCabal super.hnix (drv: {
+      # executable is allowed for ghc >= 8.10 and needs repline
+      executableHaskellDepends = drv.executableToolDepends or [] ++ [ self.repline ];
+    }));
 
+  # Break out of "Cabal < 3.2" constraint.
+  stylish-haskell = doJailbreak super.stylish-haskell;
+
+  # Agda 2.6.1.2 only declares a transformers dependency for ghc < 8.10.3.
+  # https://github.com/agda/agda/issues/5109
+  Agda = appendPatch super.Agda (pkgs.fetchpatch {
+    url = "https://github.com/agda/agda/commit/76278c23d447b49f59fac581ca4ac605792aabbc.patch";
+    sha256 = "1g34g8a09j73h89pk4cdmri0nb0qg664hkff45amcr9kyz14a9f3";
+  });
 }

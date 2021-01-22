@@ -1,4 +1,4 @@
-{ stdenv, buildPythonPackage, fetchPypi, isPyPy
+{ lib, stdenv, buildPythonPackage, fetchPypi, isPyPy
 , olefile
 , freetype, libjpeg, zlib, libtiff, libwebp, tcl, lcms2, tk, libX11
 , openjpeg, libimagequant
@@ -8,13 +8,13 @@
 
 buildPythonPackage rec {
   pname = "Pillow";
-  version = "7.1.2";
+  version = "8.0.1";
 
   disabled = !isPy3k;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1pdh1zzdwxilvsjg6rnl4q810pc2p2y16q6lx9gzzihb25h9kd50";
+    sha256 = "11c5c6e9b02c9dac08af04f093eb5a2f84857df70a7d4a6a6ad461aca803fb9e";
   };
 
   # Disable imagefont tests, because they don't work well with infinality:
@@ -67,7 +67,7 @@ buildPythonPackage rec {
       --replace '"/System/Library/Frameworks"' ""
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://python-pillow.org/";
     description = "The friendly PIL fork (Python Imaging Library)";
     longDescription = ''

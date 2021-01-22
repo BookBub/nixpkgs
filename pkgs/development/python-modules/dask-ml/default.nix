@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , buildPythonPackage
 , fetchPypi
 , pythonOlder
@@ -20,13 +20,13 @@
 }:
 
 buildPythonPackage rec {
-  version = "1.5.0";
+  version = "1.7.0";
   pname = "dask-ml";
   disabled = pythonOlder "3.6"; # >= 3.6
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "8a9879b7d1642ed8cd48115d81f92a246eb7ffeadc42748053c5339a56f569b4";
+    sha256 = "5f93e8560217ebbc5a2254eaf705e9cad8e1c82012567c658e26464a74fbab76";
   };
 
   propagatedBuildInputs = [
@@ -55,7 +55,7 @@ buildPythonPackage rec {
     "dask_ml.utils"
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://github.com/dask/dask-ml";
     description = "Scalable Machine Learn with Dask";
     license = licenses.bsd3;

@@ -1,20 +1,20 @@
-{ stdenv, fetchurl, cups, busybox }:
+{ lib, stdenv, fetchurl, cups, busybox }:
 
 stdenv.mkDerivation rec {
   pname = "epson-inkjet-printer-escpr2";
-  version = "1.1.13";
+  version = "1.1.24";
 
   src = fetchurl {
     # To find new versions, visit
     # http://download.ebz.epson.net/dsc/search/01/search/?OSC=LX and search for
     # some printer like for instance "WF-7210" to get to the most recent
-    # version.  
+    # version.
     # NOTE: Don't forget to update the webarchive link too!
     urls = [
-      "https://download3.ebz.epson.net/dsc/f/03/00/11/33/72/48e6a853e518a1bedaee575113e087c0bd5d6e2e/epson-inkjet-printer-escpr2-1.1.13-1lsb3.2.src.rpm"
-      "https://web.archive.org/web/20200629154055if_/https://download3.ebz.epson.net/dsc/f/03/00/11/33/72/48e6a853e518a1bedaee575113e087c0bd5d6e2e/epson-inkjet-printer-escpr2-1.1.13-1lsb3.2.src.rpm"
+      "https://download3.ebz.epson.net/dsc/f/03/00/12/09/63/b7d2bb6a97c9ad99a96ebc68f8abcb1254888e94/epson-inkjet-printer-escpr2-1.1.24-1lsb3.2.src.rpm"
+      "https://web.archive.org/web/20201112163802if_/https://download3.ebz.epson.net/dsc/f/03/00/12/09/63/b7d2bb6a97c9ad99a96ebc68f8abcb1254888e94/epson-inkjet-printer-escpr2-1.1.24-1lsb3.2.src.rpm"
     ];
-    sha256 = "07g62vndn2wh9bablvdl2cxn9wq3hzn16mqji27j20h33cwqmzj1";
+    sha256 = "sha256-DPzjKKsTWbfDk1MsVPXNsO5D7C/RiNegmwq2sEMx2co=";
   };
 
   patches = [ ./cups-filter-ppd-dirs.patch ];
@@ -28,7 +28,7 @@ stdenv.mkDerivation rec {
     cd ${pname}-${version}
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "http://download.ebz.epson.net/dsc/search/01/search/";
     description = "ESC/P-R 2 Driver (generic driver)";
     longDescription = ''

@@ -7,6 +7,7 @@
 , python
 , libusb1
 , runtimeShell
+, lib
 }:
 
 stdenv.mkDerivation rec {
@@ -32,7 +33,7 @@ stdenv.mkDerivation rec {
     python
     libxml2
     libusb1
-  ];
+  ] ++ lib.optional python.isPy3k python.pkgs.setuptools;
 
   cmakeFlags = [
     "-DUDEV_RULES_INSTALL_DIR=${placeholder "out"}/lib/udev/rules.d"
@@ -52,7 +53,7 @@ stdenv.mkDerivation rec {
     moveToOutput ${python.sitePackages} "$python"
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "API for interfacing with the Linux Industrial I/O Subsystem";
     homepage = "https://github.com/analogdevicesinc/libiio";
     license = licenses.lgpl21Plus;

@@ -1,4 +1,4 @@
-{ stdenv, fetchPypi, buildPythonPackage, pythonOlder, isPy3k
+{ lib, stdenv, fetchPypi, buildPythonPackage, pythonOlder, isPy3k
 , pyperclip, six, pyparsing, vim, wcwidth, colorama, attrs
 , contextlib2 ? null, typing ? null, setuptools_scm
 , pytest, mock ? null, pytest-mock
@@ -6,11 +6,11 @@
 }:
 buildPythonPackage rec {
   pname = "cmd2";
-  version = "1.0.2";
+  version = "1.4.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1f18plbc9yyvhn0js3d2bii9yld8zfl775gxsaw9jza5pmlg9ss2";
+    sha256 = "e59fa932418603af4e046a96c8985812b05af8a73bfd9d7a386cd1b02c6ab687";
   };
 
   LC_ALL="en_US.UTF-8";
@@ -52,7 +52,7 @@ buildPythonPackage rec {
     py.test -k 'not test_path_completion_user_expansion'
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Enhancements for standard library's cmd module";
     homepage = "https://github.com/python-cmd2/cmd2";
     maintainers = with maintainers; [ teto ];

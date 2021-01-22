@@ -7,11 +7,16 @@
 , profiledCompiler ? false
 , langJit ? false
 , staticCompiler ? false
-, enableShared ? true
+, # N.B. the defult is intentionally not from an `isStatic`. See
+  # https://gcc.gnu.org/install/configure.html - this is about target
+  # platform libraries not host platform ones unlike normal. But since
+  # we can't rebuild those without also rebuilding the compiler itself,
+  # we opt to always build everything unlike our usual policy.
+  enableShared ? true
 , enableLTO ? true
 , texinfo ? null
 , perl ? null # optional, for texi2pod (then pod2man)
-, gmp, mpfr, libmpc, gettext, which
+, gmp, mpfr, libmpc, gettext, which, patchelf
 , libelf                      # optional, for link-time optimizations (LTO)
 , isl ? null # optional, for the Graphite optimization framework.
 , zlib ? null
@@ -47,7 +52,7 @@ with stdenv.lib;
 with builtins;
 
 let majorVersion = "10";
-    version = "${majorVersion}.1.0";
+    version = "${majorVersion}.2.0";
 
     inherit (stdenv) buildPlatform hostPlatform targetPlatform;
 
@@ -61,10 +66,9 @@ let majorVersion = "10";
       ++ optional langAda ../gnat-cflags.patch
       ++ optional langFortran ../gfortran-driving.patch
       ++ optional (targetPlatform.libc == "musl" && targetPlatform.isPower) ../ppc-musl.patch
-      ++ optional (!crossStageStatic && targetPlatform.isMinGW) (fetchpatch {
-        url = "https://raw.githubusercontent.com/lhmouse/MINGW-packages/${import ../common/mfcgthreads-patches-repo.nix}/mingw-w64-gcc-git/9000-gcc-${majorVersion}-branch-Added-mcf-thread-model-support-from-mcfgthread.patch";
-        sha256 = "1in5kvcknlpi9z1vvjw6jfmwy8k12zvbqlqfnq84qpm99r0rh00a";
-      });
+
+      # Obtain latest patch with ../update-mcfgthread-patches.sh
+      ++ optional (!crossStageStatic && targetPlatform.isMinGW) ./Added-mcf-thread-model-support-from-mcfgthread.patch;
 
     /* Cross-gcc settings (build == host != target) */
     crossMingw = targetPlatform != hostPlatform && targetPlatform.libc == "msvcrt";
@@ -81,7 +85,7 @@ stdenv.mkDerivation ({
 
   src = fetchurl {
     url = "mirror://gcc/releases/gcc-${version}/gcc-${version}.tar.xz";
-    sha256 = "b6898a23844b656f1b68691c5c012036c2e694ac4b53a8918d4712ad876e7ea2";
+    sha256 = "130xdkhmz1bc2kzx061s3sfwk36xah1fw5w332c0nzwwpdl47pdq";
   };
 
   inherit patches;
@@ -137,10 +141,10 @@ stdenv.mkDerivation ({
         )
     else "")
       + stdenv.lib.optionalString targetPlatform.isAvr ''
-	        makeFlagsArray+=(
-	           'LIMITS_H_TEST=false'
-	        )
-	      '';
+            makeFlagsArray+=(
+               'LIMITS_H_TEST=false'
+            )
+          '';
 
   inherit noSysDirs staticCompiler crossStageStatic
     libcCross crossMingw;
@@ -151,11 +155,14 @@ stdenv.mkDerivation ({
 
   # For building runtime libs
   depsBuildTarget =
-    if hostPlatform == buildPlatform then [
-      targetPackages.stdenv.cc.bintools # newly-built gcc will be used
-    ] else assert targetPlatform == hostPlatform; [ # build != host == target
-      stdenv.cc
-    ];
+    (
+      if hostPlatform == buildPlatform then [
+        targetPackages.stdenv.cc.bintools # newly-built gcc will be used
+      ] else assert targetPlatform == hostPlatform; [ # build != host == target
+        stdenv.cc
+      ]
+    )
+    ++ optional targetPlatform.isLinux patchelf;
 
   buildInputs = [
     gmp mpfr libmpc libelf

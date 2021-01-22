@@ -1,4 +1,4 @@
-{ stdenv, lib, fetchFromGitHub, buildGoModule, libnotify, makeWrapper, pcsclite, pinentry_mac, pkgconfig, darwin }:
+{ stdenv, lib, fetchFromGitHub, buildGoModule, libnotify, makeWrapper, pcsclite, pinentry_mac, pkg-config, darwin }:
 
 buildGoModule rec {
   pname = "yubikey-agent";
@@ -15,7 +15,7 @@ buildGoModule rec {
     lib.optional stdenv.isLinux (lib.getDev pcsclite)
     ++ lib.optional stdenv.isDarwin (darwin.apple_sdk.frameworks.PCSC);
 
-  nativeBuildInputs = [ makeWrapper pkgconfig ];
+  nativeBuildInputs = [ makeWrapper pkg-config ];
 
   # pull in go-piv/piv-go#75
   # once go-piv/piv-go#75 is merged and released, we should
@@ -25,7 +25,9 @@ buildGoModule rec {
     substituteInPlace main.go --replace 'notify-send' ${libnotify}/bin/notify-send
   '';
 
-  vendorSha256 = "1x7934p6522i0yyv08xzb4134d0kr5x6igsrp26vh79d8fndbywr";
+  vendorSha256 = "128mlsagj3im6h0p0ndhzk29ya47g19im9dldx3nmddf2jlccj2h";
+
+  doCheck = false;
 
   subPackages = [ "." ];
 

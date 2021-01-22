@@ -2,18 +2,20 @@
 
 buildGoModule rec {
   pname = "circleci-cli";
-  version = "0.1.8599";
+  version = "0.1.11924";
 
   src = fetchFromGitHub {
     owner = "CircleCI-Public";
     repo = pname;
     rev = "v${version}";
-    sha256 = "1brv38mzc2i6mg4rk9ichjsv5w0gr6xrf6qmhnal12cll2krn9k3";
+    sha256 = "sha256-KY1kqqRRpwNt0ovllfFcWSsJAH2J1NrlQAueqQrw354=";
   };
 
-  vendorSha256 = "0y35ps2pw9z7gi4z50byd1py87bf2jdvj7l7w2gxpppmhi83myc9";
+  vendorSha256 = "sha256-6FBMLwoLM2BtnMHQfpY7f7NiQt5evsL4CfYTZvr3gAs=";
 
-  buildFlagsArray = [ "-ldflags=-s -w -X github.com/CircleCI-Public/circleci-cli/version.Version=${version}" ];
+  doCheck = false;
+
+  buildFlagsArray = [ "-ldflags=-s -w -X github.com/CircleCI-Public/circleci-cli/version.Version=${version} -X github.com/CircleCI-Public/circleci-cli/version.Commit=${src.rev} -X github.com/CircleCI-Public/circleci-cli/version.packageManager=nix" ];
 
   preBuild = ''
     substituteInPlace data/data.go \

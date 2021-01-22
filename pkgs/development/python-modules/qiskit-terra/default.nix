@@ -8,16 +8,16 @@
 , fastjsonschema
 , jsonschema
 , numpy
-, marshmallow
-, marshmallow-polyfield
 , networkx
 , ply
 , psutil
 , python-constraint
+, python-dateutil
 , retworkx
 , scipy
 , sympy
-  # Python visualization requirements, semi-optional
+, withVisualization ? false
+  # Python visualization requirements, optional
 , ipywidgets
 , matplotlib
 , pillow
@@ -25,6 +25,12 @@
 , pygments
 , pylatexenc
 , seaborn
+  # Crosstalk-adaptive layout pass
+, withCrosstalkPass ? false
+, z3
+  # Classical function -> Quantum Circuit compiler
+, withClassicalFunctionCompiler ? false
+, tweedledum ? null
   # test requirements
 , ddt
 , hypothesis
@@ -34,17 +40,31 @@
 , python
 }:
 
+let
+  visualizationPackages = [
+    ipywidgets
+    matplotlib
+    pillow
+    pydot
+    pygments
+    pylatexenc
+    seaborn
+  ];
+  crosstalkPackages = [ z3 ];
+  classicalCompilerPackages = [ tweedledum ];
+in
+
 buildPythonPackage rec {
   pname = "qiskit-terra";
-  version = "0.14.2";
+  version = "0.16.1";
 
-  disabled = pythonOlder "3.5";
+  disabled = pythonOlder "3.6";
 
   src = fetchFromGitHub {
     owner = "Qiskit";
     repo = pname;
     rev = version;
-    sha256 = "0p5wapjvy81pnks100xbb23kbs2wyys9ykyc8z4968wl487lq4g5";
+    sha256 = "0007glsbrvq9swamvz8r76z9nzh46b388y0ds1dypczxpwlp9xcq";
   };
 
   nativeBuildInputs = [ cython ];
@@ -54,51 +74,62 @@ buildPythonPackage rec {
     fastjsonschema
     jsonschema
     numpy
-    marshmallow
-    marshmallow-polyfield
-    matplotlib
     networkx
     ply
     psutil
     python-constraint
+    python-dateutil
     retworkx
     scipy
     sympy
-    # Optional/visualization inputs
-    ipywidgets
-    matplotlib
-    pillow
-    pydot
-    pygments
-    pylatexenc
-    seaborn
-  ];
-
-  postPatch = ''
-    # Fix relative imports in tests
-    touch test/python/dagcircuit/__init__.py
-  '';
+  ] ++ lib.optionals withVisualization visualizationPackages
+  ++ lib.optionals withCrosstalkPass crosstalkPackages
+  ++ lib.optionals withClassicalFunctionCompiler classicalCompilerPackages;
 
   # *** Tests ***
   checkInputs = [
+    pytestCheckHook
     ddt
     hypothesis
     nbformat
     nbconvert
-    pytestCheckHook
-  ];
-  dontUseSetuptoolsCheck = true;  # can't find setup.py, so fails. tested by pytest
+  ] ++ lib.optionals (!withVisualization) visualizationPackages;
 
   pythonImportsCheck = [
     "qiskit"
     "qiskit.transpiler.passes.routing.cython.stochastic_swap.swap_trial"
   ];
 
-  disabledTests = [
-    "test_random_clifford_valid"  # random test, fails at least once when testing locally.
-  ];
   pytestFlagsArray = [
     "--ignore=test/randomized/test_transpiler_equivalence.py" # collection requires qiskit-aer, which would cause circular dependency
+  ] ++ lib.optionals (!withClassicalFunctionCompiler ) [
+    "--ignore=test/python/classical_function_compiler/"
+  ];
+  disabledTests = [
+    # Flaky tests
+    "test_cx_equivalence"
+    "test_pulse_limits"
+  ]
+  # Disabling slow tests for build constraints
+  ++ [
+    "test_all_examples"
+    "test_controlled_random_unitary"
+    "test_controlled_standard_gates_1"
+    "test_jupyter_jobs_pbars"
+    "test_lookahead_swap_higher_depth_width_is_better"
+    "test_move_measurements"
+    "test_job_monitor"
+    "test_wait_for_final_state"
+    "test_multi_controlled_y_rotation_matrix_basic_mode"
+    "test_two_qubit_weyl_decomposition_abc"
+    "test_isometry"
+    "test_parallel"
+    "test_random_state"
+    "test_random_clifford_valid"
+    "test_to_matrix"
+    "test_block_collection_reduces_1q_gate"
+    "test_multi_controlled_rotation_gate_matrices"
+    "test_block_collection_runs_for_non_cx_bases"
   ];
 
   # Moves tests to $PACKAGEDIR/test. They can't be run from /build because of finding
@@ -106,9 +137,9 @@ buildPythonPackage rec {
   preCheck = ''
     export PACKAGEDIR=$out/${python.sitePackages}
     echo "Moving Qiskit test files to package directory"
-    cp -r $TMP/source/test $PACKAGEDIR
-    cp -r $TMP/source/examples $PACKAGEDIR
-    cp -r $TMP/source/qiskit/schemas/examples $PACKAGEDIR/qiskit/schemas/
+    cp -r $TMP/$sourceRoot/test $PACKAGEDIR
+    cp -r $TMP/$sourceRoot/examples $PACKAGEDIR
+    cp -r $TMP/$sourceRoot/qiskit/schemas/examples $PACKAGEDIR/qiskit/schemas/
 
     # run pytest from Nix's $out path
     pushd $PACKAGEDIR
@@ -127,6 +158,7 @@ buildPythonPackage rec {
     '';
     homepage = "https://qiskit.org/terra";
     downloadPage = "https://github.com/QISKit/qiskit-terra/releases";
+    changelog = "https://qiskit.org/documentation/release_notes.html";
     license = licenses.asl20;
     maintainers = with maintainers; [ drewrisinger ];
   };

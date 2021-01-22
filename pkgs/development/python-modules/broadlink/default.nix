@@ -3,11 +3,11 @@
 
 buildPythonPackage rec {
   pname = "broadlink";
-  version = "0.14.0";
+  version = "0.16.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "f771456ed990187f170d1561e2fd3d490ef646a2570a0286fe709a7115abcb49";
+    sha256 = "637dabc6f47b283b72bc521322554462da7a247f04614e458d65df8574d03a41";
   };
 
   postPatch = ''

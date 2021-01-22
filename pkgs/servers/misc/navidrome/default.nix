@@ -1,14 +1,14 @@
-{ stdenv, fetchurl, ffmpeg, ffmpegSupport ? true, makeWrapper }:
+{ lib, stdenv, fetchurl, ffmpeg, ffmpegSupport ? true, makeWrapper }:
 
-with stdenv.lib;
+with lib;
 
 stdenv.mkDerivation rec {
   pname = "navidrome";
-  version = "0.24.0";
+  version = "0.39.0";
 
   src = fetchurl {
     url = "https://github.com/deluan/navidrome/releases/download/v${version}/navidrome_${version}_Linux_x86_64.tar.gz";
-    sha256 = "1lk9fl2h1rsqirqnz4qmapv9hl2axz7j32p9a011h0n90frabski";
+    sha256 = "0ngqlb9d8xml0vnjsn6vpi02sjqldsiirlrzfncrh3hlcrhk4fcn";
   };
 
   nativeBuildInputs = [ makeWrapper ];
@@ -26,7 +26,7 @@ stdenv.mkDerivation rec {
     wrapProgram $out/bin/navidrome \
       --prefix PATH : ${makeBinPath (optional ffmpegSupport ffmpeg)}
   '';
-  
+
   meta = {
     description = "Navidrome Music Server and Streamer compatible with Subsonic/Airsonic";
     homepage = "https://www.navidrome.org/";

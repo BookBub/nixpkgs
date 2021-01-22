@@ -1,7 +1,7 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , rustPlatform
-, pkgconfig
+, pkg-config
 , libressl
 , curl
 , Security
@@ -20,7 +20,7 @@ rustPlatform.buildRustPackage rec {
 
   cargoSha256 = "0fw04hgxxqsbp1pylp32yd087r9bb8bpa05v90qdshkgp6znfl9s";
 
-  nativeBuildInputs = [ pkgconfig ];
+  nativeBuildInputs = [ pkg-config ];
 
   buildInputs = [
     # LibreSSL works around segfault issues caused by OpenSSL being unable to
@@ -33,11 +33,10 @@ rustPlatform.buildRustPackage rec {
   # Disabling check here to work with build sandboxing.
   doCheck = false;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A utility that builds rust-generated WebAssembly package";
     homepage = "https://github.com/rustwasm/wasm-pack";
     license = with licenses; [ asl20 /* or */ mit ];
     maintainers = [ maintainers.dhkl ];
-    platforms = platforms.all;
   };
 }

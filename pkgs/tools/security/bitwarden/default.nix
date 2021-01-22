@@ -6,6 +6,7 @@
 , makeDesktopItem
 , makeWrapper
 , stdenv
+, lib
 , udev
 , wrapGAppsHook
 }:
@@ -16,14 +17,14 @@ let
   pname = "bitwarden";
 
   version = {
-    x86_64-linux = "1.19.0";
+    x86_64-linux = "1.23.1";
   }.${system} or "";
 
   sha256 = {
-    x86_64-linux = "16qlgnqyi0jwzlz8wg2628jhh83xsk46bl6p4dnwi0ay07lhab9w";
+    x86_64-linux = "1jv6w1g6b9c4xa5zy7pgzrkn8k4pyy3cdkh0nw2czn1cw2gaccs1";
   }.${system} or "";
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A secure and free password manager for all of your devices";
     homepage = "https://bitwarden.com";
     license = licenses.gpl3;
@@ -72,12 +73,12 @@ let
     '';
 
     runtimeDependencies = [
-      udev.lib
+      (lib.getLib udev)
     ];
 
     postFixup = ''
       makeWrapper $out/opt/Bitwarden/bitwarden $out/bin/bitwarden \
-        --prefix LD_LIBRARY_PATH : "${stdenv.lib.makeLibraryPath [ libsecret stdenv.cc.cc ] }" \
+        --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libsecret stdenv.cc.cc ] }" \
         "''${gappsWrapperArgs[@]}"
     '';
   };

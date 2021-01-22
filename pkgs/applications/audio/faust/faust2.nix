@@ -1,8 +1,8 @@
-{ stdenv
+{ lib, stdenv
 , coreutils
 , fetchFromGitHub
 , makeWrapper
-, pkgconfig
+, pkg-config
 , cmake
 , llvm
 , emscripten
@@ -16,22 +16,22 @@
 , which
 }:
 
-with stdenv.lib.strings;
+with lib.strings;
 
 let
 
-  version = "unstable-2020-06-08";
+  version = "unstable-2020-08-27";
 
   src = fetchFromGitHub {
     owner = "grame-cncm";
     repo = "faust";
-    rev = "f0037e289987818b65d3f6fb1ad943aaad2a2b28";
-    sha256 = "0h08902rgx7rhzpng4h1qw8i2nzv50f79vrlbzdk5d35wa4zibh4";
+    rev = "c10f316fa90f338e248787ebf55e3795c3a0d70e";
+    sha256 = "068pm04ddafbsj2r8akdpqyzb0m8mp9ql0rgi83hcqs4ndr8v7sb";
     fetchSubmodules = true;
   };
 
-  meta = with stdenv.lib; {
-    homepage = "http://faust.grame.fr/";
+  meta = with lib; {
+    homepage = "https://faust.grame.fr/";
     downloadPage = "https://github.com/grame-cncm/faust/";
     license = licenses.gpl2;
     platforms = platforms.linux;
@@ -45,7 +45,7 @@ let
 
     inherit src;
 
-    nativeBuildInputs = [ makeWrapper pkgconfig cmake vim which ];
+    nativeBuildInputs = [ makeWrapper pkg-config cmake vim which ];
     buildInputs = [ llvm emscripten openssl libsndfile libmicrohttpd gnutls libtasn1 p11-kit ];
 
 
@@ -168,12 +168,12 @@ let
 
     stdenv.mkDerivation ((faust2ApplBase args) // {
 
-      nativeBuildInputs = [ pkgconfig ];
+      nativeBuildInputs = [ pkg-config ];
       buildInputs = [ makeWrapper ];
 
       propagatedBuildInputs = [ faust ] ++ propagatedBuildInputs;
 
-      libPath = stdenv.lib.makeLibraryPath propagatedBuildInputs;
+      libPath = lib.makeLibraryPath propagatedBuildInputs;
 
       postFixup = ''
 

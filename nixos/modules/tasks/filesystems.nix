@@ -159,7 +159,7 @@ in
           "/bigdisk".label = "bigdisk";
         }
       '';
-      type = types.loaOf (types.submodule [coreFileSystemOpts fileSystemOpts]);
+      type = types.attrsOf (types.submodule [coreFileSystemOpts fileSystemOpts]);
       description = ''
         The file systems to be mounted.  It must include an entry for
         the root directory (<literal>mountPoint = "/"</literal>).  Each
@@ -193,7 +193,7 @@ in
 
     boot.specialFileSystems = mkOption {
       default = {};
-      type = types.loaOf (types.submodule coreFileSystemOpts);
+      type = types.attrsOf (types.submodule coreFileSystemOpts);
       internal = true;
       description = ''
         Special filesystems that are mounted very early during boot.
@@ -286,7 +286,7 @@ in
             before = [ mountPoint' "systemd-fsck@${device'}.service" ];
             requires = [ device'' ];
             after = [ device'' ];
-            path = [ pkgs.utillinux ] ++ config.system.fsPackages;
+            path = [ pkgs.util-linux ] ++ config.system.fsPackages;
             script =
               ''
                 if ! [ -e "${fs.device}" ]; then exit 1; fi

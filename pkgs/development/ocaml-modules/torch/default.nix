@@ -1,8 +1,10 @@
 { lib
+, stdenv
 , buildDunePackage
 , fetchFromGitHub
 , cmdliner
 , ctypes
+, dune-configurator
 , npy
 , ocaml-compiler-libs
 , ppx_custom_printf
@@ -15,16 +17,20 @@
 
 buildDunePackage rec {
   pname = "torch";
-  version = "0.9b";
+  version = "0.11";
 
-  minimumOCamlVersion = "4.07";
+  useDune2 = true;
+
+  minimumOCamlVersion = "4.08";
 
   src = fetchFromGitHub {
     owner = "LaurentMazare";
     repo   = "ocaml-${pname}";
     rev    = version;
-    sha256 = "1xn8zfs3viz80agckcpl9a4vjbq6j5g280i95jyy5s0zbcnajpnm";
+    sha256 = "19zbl9zn6fslrcm6x9cis6nswhwz8mc57nrhkada658n7rcdmskr";
   };
+
+  buildInputs = [ dune-configurator ];
 
   propagatedBuildInputs = [
     cmdliner
@@ -42,7 +48,7 @@ buildDunePackage rec {
 
   preBuild = ''export LIBTORCH=${pytorch.dev}/'';
 
-  doCheck = true;
+  doCheck = !stdenv.isAarch64;
   checkPhase = "dune runtest";
 
   meta = with lib; {

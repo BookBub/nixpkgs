@@ -1,4 +1,13 @@
-{ lib, buildPythonPackage, fetchFromGitHub, stdenv, isPy3k, fetchpatch, humanfriendly, verboselogs, capturer, pytest, mock, utillinux }:
+{ lib
+, buildPythonPackage
+, fetchFromGitHub
+, humanfriendly
+, verboselogs
+, capturer
+, pytest
+, mock
+, util-linux
+}:
 
 buildPythonPackage rec {
   pname = "coloredlogs";
@@ -11,18 +20,11 @@ buildPythonPackage rec {
     sha256 = "0rnmxwrim4razlv4vi3krxk5lc5ksck6h5374j8avqwplika7q2x";
   };
 
-  # patch by risicle
-  patches = lib.optional (stdenv.isDarwin && isPy3k) (fetchpatch {
-    name = "darwin-py3-capture-fix.patch";
-    url = "https://github.com/xolox/python-coloredlogs/pull/74.patch";
-    sha256 = "0pk7k94iz0gdripw623vzdl4hd83vwhsfzshl8pbvh1n6swi0xx9";
-  });
-
   checkPhase = ''
     PATH=$PATH:$out/bin pytest . -k "not test_plain_text_output_format \
                                      and not test_auto_install"
   '';
-  checkInputs = [ pytest mock utillinux ];
+  checkInputs = [ pytest mock util-linux ];
 
   propagatedBuildInputs = [ humanfriendly verboselogs capturer ];
 

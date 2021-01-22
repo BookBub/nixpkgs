@@ -1,19 +1,18 @@
-{ lib, buildPythonPackage, fetchPypi, aiohttp, future-fstrings, pythonOlder
+{ lib, buildPythonPackage, fetchPypi, aiohttp, pythonOlder
 , sqlalchemy, ruamel_yaml, CommonMark, lxml, fetchpatch
 }:
 
 buildPythonPackage rec {
   pname = "mautrix";
-  version = "0.5.7";
+  version = "0.8.9";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0czymj9k9faky4dyrbxpr8rfrsb28xz9c0p66dcxvchk3m3ac49k";
+    sha256 = "13669a0150370c96cabcff859fb4d17f4a539dc7c707ff0c99c00612e24f5447";
   };
 
   propagatedBuildInputs = [
     aiohttp
-    future-fstrings
 
     # defined in optional-requirements.txt
     sqlalchemy
@@ -22,7 +21,7 @@ buildPythonPackage rec {
     lxml
   ];
 
-  disabled = pythonOlder "3.5";
+  disabled = pythonOlder "3.7";
 
   # no tests available
   doCheck = false;

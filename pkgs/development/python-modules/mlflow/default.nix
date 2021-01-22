@@ -1,4 +1,4 @@
-{ stdenv, buildPythonPackage, fetchPypi, isPy27
+{ lib, stdenv, buildPythonPackage, fetchPypi, isPy27
 , alembic
 , click
 , cloudpickle
@@ -25,12 +25,12 @@
 
 buildPythonPackage rec {
   pname = "mlflow";
-  version = "1.8.0";
+  version = "1.12.1";
   disabled = isPy27;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "bab1b95da17ffb1856fec35fc1a0bc9d16e1811e41610a97c2c955884eb6ac53";
+    sha256 = "9b8af18d6e779fbbb094edfeb963691e485bba62eeec39fd62dfbe34bc12afeb";
   };
 
   # run into https://stackoverflow.com/questions/51203641/attributeerror-module-alembic-context-has-no-attribute-config
@@ -61,10 +61,12 @@ buildPythonPackage rec {
     gunicorn
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://github.com/mlflow/mlflow";
     description = "Open source platform for the machine learning lifecycle";
     license = licenses.asl20;
     maintainers = with maintainers; [ tbenst ];
+    # missing prometheus-flask-exporter, not packaged in nixpkgs
+    broken = true; # 2020-08-15
   };
 }

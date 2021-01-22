@@ -1,33 +1,28 @@
-{ stdenv, lib, buildGoModule, fetchFromGitHub, terraform, makeWrapper }:
+{ lib, buildGoModule, fetchFromGitHub, makeWrapper }:
 
 buildGoModule rec {
   pname = "terragrunt";
-  version = "0.23.31";
+  version = "0.27.1";
 
-   src = fetchFromGitHub {
+  src = fetchFromGitHub {
     owner = "gruntwork-io";
     repo = pname;
     rev = "v${version}";
-    sha256 = "1wpb749hc6pbmxcba1k4yrwcg8547rnsskxb45bzqyqyj1nj775s";
+    sha256 = "sha256-YZ/3qtukPoCbgzy1qr0MJHSdqovzmP/AQixLq6GO27Q";
   };
 
-  vendorSha256 = "1xn7c6y32vpanqvf1sfpw6bs73dbjniavjbf00j0vx83bfyklsr4";
+  vendorSha256 = "sha256-AMxBzUHRsq1HOMtvgYqIw22Cky7gQ7/2hI8wQnxaXb0=";
+
+  doCheck = false;
 
   buildInputs = [ makeWrapper ];
 
-  preBuild = ''
-    buildFlagsArray+=("-ldflags" "-X main.VERSION=v${version}")
-  '';
+  buildFlagsArray = [ "-ldflags=" "-X main.VERSION=v${version}" ];
 
-  postInstall = ''
-    wrapProgram $out/bin/terragrunt \
-      --set TERRAGRUNT_TFPATH ${lib.getBin terraform.full}/bin/terraform
-  '';
-
-  meta = with stdenv.lib; {
-    description = "A thin wrapper for Terraform that supports locking for Terraform state and enforces best practices.";
+  meta = with lib; {
+    description = "A thin wrapper for Terraform that supports locking for Terraform state and enforces best practices";
     homepage = "https://github.com/gruntwork-io/terragrunt/";
     license = licenses.mit;
-    maintainers = with maintainers; [ peterhoeg ];
+    maintainers = with maintainers; [ peterhoeg jk ];
   };
 }

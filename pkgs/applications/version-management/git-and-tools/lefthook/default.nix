@@ -1,4 +1,10 @@
-{ stdenv, buildGoModule, fetchFromGitHub }:
+{ lib, stdenv, buildGoModule, fetchFromGitHub }:
+
+# Currently `buildGo114Module` is passed as `buildGoModule` from
+# `../default.nix`. Please remove the fixed 1.14 once a new release has been
+# made and the issue linked below has been closed upstream.
+
+# https://github.com/Arkweid/lefthook/issues/151
 
 buildGoModule rec {
   pname = "lefthook";
@@ -13,7 +19,9 @@ buildGoModule rec {
 
   vendorSha256 = "1pdrw4vwbj9cka2pjbjvxviigfvnrf8sgws27ixwwiblbkj4isc8";
 
-  meta = with stdenv.lib; {
+  doCheck = false;
+
+  meta = with lib; {
     description = "Fast and powerful Git hooks manager for any type of projects";
     homepage = "https://github.com/Arkweid/lefthook";
     license = licenses.mit;

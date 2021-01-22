@@ -4,6 +4,7 @@
 , pythonOlder
 , icalendar
 , lxml
+, mock
 , nose
 , pytz
 , requests
@@ -14,15 +15,16 @@
 
 buildPythonPackage rec {
   pname = "caldav";
-  version = "0.7.0";
+  version = "0.7.1";
 
   src = fetchFromGitHub {
     owner = "python-caldav";
     repo = pname;
     rev = "v${version}";
-    sha256 = "0m64maiqp3k8fsgkkvdx1dlfhkc70pqig4dclq6w8ajz82czrq83";
+    sha256 = "1shfj67kq6qzd0ngyfk09hpzfggybcfxv5s7hqs87nq9l51bssv8";
   };
 
+  nativeBuildInputs = lib.optionals (pythonOlder "3.5") [ mock ];
   propagatedBuildInputs = [ six requests vobject lxml ]
     ++ lib.optionals (pythonOlder "3.6") [ pytz tzlocal ];
 

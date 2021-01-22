@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, bundlerEnv, ruby }:
+{ lib, stdenv, fetchurl, bundlerEnv, ruby, makeWrapper }:
 
 let
   version = "4.1.1";
@@ -19,7 +19,12 @@ in
       sha256 = "1nndy5hz8zvfglxf1f3bsb1pkrfwinfxzkdan1vjs3rkckkszyh5";
     };
 
+    nativeBuildInputs = [ makeWrapper ];
     buildInputs = [ rubyEnv rubyEnv.wrappedRuby rubyEnv.bundler ];
+
+    # taken from https://www.redmine.org/issues/33784
+    # can be dropped when the upstream bug is closed and the fix is present in the upstream release
+    patches = [ ./0001-python3.patch ];
 
     buildPhase = ''
       mv config config.dist
@@ -27,15 +32,17 @@ in
     '';
 
     installPhase = ''
-      mkdir -p $out/share
+      mkdir -p $out/bin $out/share
       cp -r . $out/share/redmine
       for i in config files log plugins public/plugin_assets public/themes tmp; do
         rm -rf $out/share/redmine/$i
         ln -fs /run/redmine/$i $out/share/redmine/$i
       done
+
+      makeWrapper ${rubyEnv.wrappedRuby}/bin/ruby $out/bin/rdm-mailhandler.rb --add-flags $out/share/redmine/extra/mail_handler/rdm-mailhandler.rb
     '';
 
-    meta = with stdenv.lib; {
+    meta = with lib; {
       homepage = "https://www.redmine.org/";
       platforms = platforms.linux;
       maintainers = [ maintainers.aanderse ];

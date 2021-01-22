@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub, inkscape_0, imagemagick, potrace, svgo, scfbuild }:
+{ lib, stdenv, fetchFromGitHub, fetchpatch, inkscape, imagemagick, potrace, svgo, scfbuild }:
 
 stdenv.mkDerivation rec {
   pname = "twemoji-color-font";
@@ -10,7 +10,20 @@ stdenv.mkDerivation rec {
     sha256 = "00pbgqpkq21wl8fs0q1xp49xb10m48b9sz8cdc58flkd2vqfssw2";
   };
 
-  nativeBuildInputs = [ inkscape_0 imagemagick potrace svgo scfbuild ];
+  patches = [
+    # Fix build with Inkscape 1.0
+    # https://github.com/eosrei/twemoji-color-font/pull/82
+    (fetchpatch {
+      url = "https://github.com/eosrei/twemoji-color-font/commit/208ad63c2ceb38c528b5237abeb2b85ceedc1d37.patch";
+      sha256 = "TV8I++BEnVUQg7FNbnrEQ/MLV9n3drmspqjmDZgTGFI=";
+      postFetch = ''
+        substituteInPlace $out \
+          --replace "inkscape --without-gui" "inkscape --export-png"
+      '';
+    })
+  ];
+
+  nativeBuildInputs = [ inkscape imagemagick potrace svgo scfbuild ];
   # silence inkscape errors about non-writable home
   preBuild = "export HOME=\"$NIX_BUILD_ROOT\"";
   makeFlags = [ "SCFBUILD=${scfbuild}/bin/scfbuild" ];
@@ -21,7 +34,7 @@ stdenv.mkDerivation rec {
     install -Dm644 linux/fontconfig/56-twemoji-color.conf $out/etc/fonts/conf.d/56-twemoji-color.conf
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Color emoji SVGinOT font using Twitter Unicode 10 emoji with diversity and country flags";
     longDescription = ''
       A color and B&W emoji SVGinOT font built from the Twitter Emoji for

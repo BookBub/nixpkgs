@@ -1,33 +1,53 @@
-{ stdenv, buildGoModule, fetchFromGitHub }:
+{ lib, buildGoModule, fetchFromGitHub, installShellFiles }:
 
+let
+  k3sVersion = "1.20.0-k3s2";
+in
 buildGoModule rec {
   pname = "kube3d";
-  version = "1.7.0";
-  k3sVersion = "1.17.3-k3s1";
+  version = "3.4.0";
 
-  goPackagePath = "github.com/rancher/k3d";
+  excludedPackages = "tools";
 
   src = fetchFromGitHub {
-    owner  = "rancher";
-    repo   = "k3d";
-    rev    = "v${version}";
-    sha256 = "0aij2l7zmg4cxbw7pwf7ddc64di25hpjvbmp1madhz9q28rwfa9w";
+    owner = "rancher";
+    repo = "k3d";
+    rev = "v${version}";
+    sha256 = "1fisbzv786n841pagy7zbanll7k1g5ib805j9azs2s30cfhvi08b";
   };
-
-  buildFlagsArray = ''
-    -ldflags=
-      -w -s
-      -X github.com/rancher/k3d/version.Version=${version}
-      -X github.com/rancher/k3d/version.K3sVersion=v${k3sVersion}
-  '';
 
   vendorSha256 = null;
 
-  meta = with stdenv.lib; {
+  nativeBuildInputs = [ installShellFiles ];
+
+  buildFlagsArray = [
+    "-ldflags="
+    "-w"
+    "-s"
+    "-X github.com/rancher/k3d/v3/version.Version=v${version}"
+    "-X github.com/rancher/k3d/v3/version.K3sVersion=v${k3sVersion}"
+  ];
+
+  doCheck = false;
+
+  postInstall = ''
+    installShellCompletion --cmd k3d \
+      --bash <($out/bin/k3d completion bash) \
+      --fish <($out/bin/k3d completion fish) \
+      --zsh <($out/bin/k3d completion zsh)
+  '';
+
+  meta = with lib; {
     homepage = "https://github.com/rancher/k3d";
-    description = "A helper to run k3s (Lightweight Kubernetes. 5 less than k8s) in a docker container";
+    description = "A helper to run k3s (Lightweight Kubernetes. 5 less than k8s) in a docker container - k3d";
+    longDescription = ''
+      k3s is the lightweight Kubernetes distribution by Rancher: rancher/k3s
+
+      k3d creates containerized k3s clusters. This means, that you can spin up a
+      multi-node k3s cluster on a single machine using docker.
+    '';
     license = licenses.mit;
     platforms = platforms.linux;
-    maintainers = with maintainers; [ kuznero jlesquembre ngerstle ];
+    maintainers = with maintainers; [ kuznero jlesquembre ngerstle jk ];
   };
 }

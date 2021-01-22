@@ -4,11 +4,11 @@
 
 buildPythonPackage rec {
   pname = "traitsui";
-  version = "7.0.0";
+  version = "7.1.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "e569f359a58e4567b14265abe89b3de4b0f95bbbf8f491a9a7d45219628735ec";
+    sha256 = "b699aeea588b55723860ddc6b2bd9b5013c4a72e18d1bbf51c6689cc7c6a562a";
   };
 
   propagatedBuildInputs = [ traits pyface six ];

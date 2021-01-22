@@ -1,5 +1,5 @@
-{ stdenv, fetchurl, python2, libxslt, texlive
-, enableAllFeatures ? false, imagemagick ? null, transfig ? null, inkscape_0 ? null, fontconfig ? null, ghostscript ? null
+{ lib, stdenv, fetchurl, python2, libxslt, texlive
+, enableAllFeatures ? false, imagemagick ? null, transfig ? null, inkscape ? null, fontconfig ? null, ghostscript ? null
 
 , tex ? texlive.combine { # satisfy all packages that ./configure mentions
     inherit (texlive) scheme-basic epstopdf anysize appendix changebar
@@ -16,7 +16,7 @@
 assert enableAllFeatures ->
   imagemagick != null &&
   transfig != null &&
-  inkscape_0 != null &&
+  inkscape != null &&
   fontconfig != null &&
   ghostscript != null;
 
@@ -29,13 +29,13 @@ stdenv.mkDerivation rec {
   };
 
   buildInputs = [ python2 libxslt tex ]
-    ++ stdenv.lib.optionals enableAllFeatures [ imagemagick transfig ];
+    ++ lib.optionals enableAllFeatures [ imagemagick transfig ];
 
   # TODO: dblatex tries to execute texindy command, but nixpkgs doesn't have
   # that yet. In Ubuntu, texindy is a part of the xindy package.
   preConfigure = ''
     sed -i 's|self.install_layout == "deb"|False|' setup.py
-  '' + stdenv.lib.optionalString enableAllFeatures ''
+  '' + lib.optionalString enableAllFeatures ''
     for file in $(find -name "*.py"); do
         sed -e 's|cmd = \["xsltproc|cmd = \["${libxslt.bin}/bin/xsltproc|g' \
             -e 's|Popen(\["xsltproc|Popen(\["${libxslt.bin}/bin/xsltproc|g' \
@@ -47,7 +47,7 @@ stdenv.mkDerivation rec {
             -e 's|Popen("pdflatex|Popen("${tex}/bin/pdflatex|g' \
             -e 's|"fc-match"|"${fontconfig.bin}/bin/fc-match"|g' \
             -e 's|"fc-list"|"${fontconfig.bin}/bin/fc-list"|g' \
-            -e 's|cmd = "inkscape|cmd = "${inkscape_0}/bin/inkscape|g' \
+            -e 's|cmd = "inkscape|cmd = "${inkscape}/bin/inkscape|g' \
             -e 's|cmd = "fig2dev|cmd = "${transfig}/bin/fig2dev|g' \
             -e 's|cmd = \["ps2pdf|cmd = ["${ghostscript}/bin/ps2pdf|g' \
             -e 's|cmd = "convert|cmd = "${imagemagick.out}/bin/convert|g' \
@@ -66,7 +66,7 @@ stdenv.mkDerivation rec {
   meta = {
     description = "A program to convert DocBook to DVI, PostScript or PDF via LaTeX or ConTeXt";
     homepage = "http://dblatex.sourceforge.net/";
-    license = stdenv.lib.licenses.gpl2Plus;
-    platforms = stdenv.lib.platforms.unix;
+    license = lib.licenses.gpl2Plus;
+    platforms = lib.platforms.unix;
   };
 }

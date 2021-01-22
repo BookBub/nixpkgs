@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , buildPythonPackage
 , fetchPypi
 , pytest
@@ -7,11 +7,11 @@
 
 buildPythonPackage rec {
   pname = "lazy-object-proxy";
-  version = "1.5.0";
+  version = "1.5.2";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "a0aed261060cd0372abf08d16399b1224dbb5b400312e6b00f2b23eabe1d4e96";
+    sha256 = "5944a9b95e97de1980c65f03b79b356f30a43de48682b8bdd90aa5089f0ec1f4";
   };
 
   nativeBuildInputs = [ setuptools_scm ];
@@ -24,7 +24,7 @@ buildPythonPackage rec {
   # Broken tests. Seem to be fixed upstream according to Travis.
   doCheck = false;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A fast and thorough lazy object proxy";
     homepage = "https://github.com/ionelmc/python-lazy-object-proxy";
     license = with licenses; [ bsd2 ];

@@ -1,21 +1,27 @@
 { stdenv, lib, runCommand, patchelf
-, fetchFromGitHub, rustPlatform
-, pkgconfig, curl, zlib, Security, CoreServices }:
+, fetchFromGitHub, rustPlatform, makeWrapper
+, pkg-config, curl, zlib, Security, CoreServices }:
+
+let
+  libPath = lib.makeLibraryPath [
+    zlib # libz.so.1
+  ];
+in
 
 rustPlatform.buildRustPackage rec {
   pname = "rustup";
-  version = "1.22.1";
+  version = "1.23.1";
 
   src = fetchFromGitHub {
     owner = "rust-lang";
     repo = "rustup";
     rev = version;
-    sha256 = "0nf42pkyn87y0n93vd63bihx74h4bpisv74aqldg3vcav2iv35s1";
+    sha256 = "1i3ipkq6j47bf9dh9j3axzj6z443jm4j651g38cxyrrx8b2s15x0";
   };
 
-  cargoSha256 = "0ghjrx7y25s6rjp06h0iyv4195x7daj57bqza01i1j4hm5nkhqhi";
+  cargoSha256 = "1zkrrg5m0j9rk65g51v2zh404529p9z84qqb7bfyjmgiqlnh48ig";
 
-  nativeBuildInputs = [ pkgconfig ];
+  nativeBuildInputs = [ makeWrapper pkg-config ];
 
   buildInputs = [
     curl zlib
@@ -24,24 +30,16 @@ rustPlatform.buildRustPackage rec {
   cargoBuildFlags = [ "--features no-self-update" ];
 
   patches = lib.optionals stdenv.isLinux [
-    (let
-      libPath = lib.makeLibraryPath [
-        zlib # libz.so.1
-      ];
-    in
-      (runCommand "0001-dynamically-patchelf-binaries.patch" { CC=stdenv.cc; patchelf = patchelf; libPath = "$ORIGIN/../lib:${libPath}"; } ''
-       export dynamicLinker=$(cat $CC/nix-support/dynamic-linker)
-       substitute ${./0001-dynamically-patchelf-binaries.patch} $out \
-         --subst-var patchelf \
-         --subst-var dynamicLinker \
-         --subst-var libPath
+    (runCommand "0001-dynamically-patchelf-binaries.patch" { CC=stdenv.cc; patchelf = patchelf; libPath = "$ORIGIN/../lib:${libPath}"; } ''
+     export dynamicLinker=$(cat $CC/nix-support/dynamic-linker)
+     substitute ${./0001-dynamically-patchelf-binaries.patch} $out \
+       --subst-var patchelf \
+       --subst-var dynamicLinker \
+       --subst-var libPath
     '')
-    )
   ];
 
-  # Disable tests until they can be run with --features no-self-update
-  doCheck = false;
-  #doCheck = !stdenv.isAarch64 && !stdenv.isDarwin;
+  doCheck = !stdenv.isAarch64 && !stdenv.isDarwin;
 
   postInstall = ''
     pushd $out/bin
@@ -54,6 +52,8 @@ rustPlatform.buildRustPackage rec {
       ln -s rustup $link
     done
     popd
+
+    wrapProgram $out/bin/rustup --prefix "LD_LIBRARY_PATH" : "${libPath}"
 
     # tries to create .rustup
     export HOME=$(mktemp -d)
@@ -70,11 +70,10 @@ rustPlatform.buildRustPackage rec {
     $out/bin/rustup completions zsh cargo >  "$out/share/zsh/site-functions/_cargo"
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "The Rust toolchain installer";
     homepage = "https://www.rustup.rs/";
     license = with licenses; [ asl20 /* or */ mit ];
     maintainers = [ maintainers.mic92 ];
-    platforms = platforms.all;
   };
 }

@@ -1,11 +1,13 @@
-{ stdenv }:
+{ stdenv, glibc }:
 with stdenv.lib;
 let
   # Sanitizers are not supported on Darwin.
   # Sanitizer headers aren't available in older libc++ stdenvs due to a bug
-  sanitizersWorking =
-       (stdenv.cc.isClang && versionAtLeast (getVersion stdenv.cc.name) "5.0.0")
-    || (stdenv.cc.isGNU && stdenv.isLinux);
+  sanitizersWorking = !stdenv.hostPlatform.isMusl && (
+    (stdenv.cc.isClang && versionAtLeast (getVersion stdenv.cc.name) "5.0.0")
+    || (stdenv.cc.isGNU && stdenv.isLinux)
+  );
+  staticLibc = optionalString (stdenv.hostPlatform.libc == "glibc") "-L ${glibc.static}/lib";
 in stdenv.mkDerivation {
   name = "cc-wrapper-test";
 
@@ -28,6 +30,19 @@ in stdenv.mkDerivation {
       ./core-foundation-check
     ''}
 
+
+    ${optionalString (!stdenv.isDarwin) ''
+      printf "checking whether compiler builds valid static C binaries... " >&2
+      $CC ${staticLibc} -static -o cc-static ${./cc-main.c}
+      ./cc-static
+      # our glibc does not have pie enabled yet.
+      ${optionalString (stdenv.hostPlatform.isMusl && stdenv.cc.isGNU) ''
+        printf "checking whether compiler builds valid static pie C binaries... " >&2
+        $CC ${staticLibc} -static-pie -o cc-static-pie ${./cc-main.c}
+        ./cc-static-pie
+      ''}
+    ''}
+
     printf "checking whether compiler uses NIX_CFLAGS_COMPILE... " >&2
     mkdir -p foo/include
     cp ${./foo.c} foo/include/foo.h
@@ -44,6 +59,14 @@ in stdenv.mkDerivation {
 
     NIX_LDFLAGS="-L$NIX_BUILD_TOP/foo/lib -rpath $NIX_BUILD_TOP/foo/lib" $CC -lfoo -o ldflags-check ${./ldflags-main.c}
     ./ldflags-check
+
+    printf "Check whether -nostdinc and -nostdinc++ is handled correctly" >&2
+    mkdir -p std-include
+    cp ${./stdio.h} std-include/stdio.h
+    NIX_DEBUG=1 $CC -I std-include -nostdinc -o nostdinc-main ${./nostdinc-main.c}
+    ./nostdinc-main
+    $CXX -I std-include -nostdinc++ -o nostdinc-main++ ${./nostdinc-main.c}
+    ./nostdinc-main++
 
     ${optionalString sanitizersWorking ''
       printf "checking whether sanitizers are fully functional... ">&2

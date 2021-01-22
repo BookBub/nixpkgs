@@ -11,7 +11,7 @@
 }:
 
 mkDerivation {
-  name = "kmail";
+  pname = "kmail";
   meta = {
     license = with lib.licenses; [ gpl2 lgpl21 fdl12 ];
     maintainers = kdepimTeam;
@@ -27,5 +27,4 @@ mkDerivation {
     kdepim-addons
   ];
   propagatedUserEnvPkgs = [ kdepim-runtime kwallet akonadi ];
-  patches = [ ./kmail.patch ];
 }

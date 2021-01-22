@@ -6,12 +6,12 @@
 
 stdenv.mkDerivation rec {
   pname = "rgbds";
-  version = "0.4.0";
+  version = "0.4.2";
   src = fetchFromGitHub {
     owner = "rednex";
     repo = "rgbds";
     rev = "v${version}";
-    sha256 = "15680964nlsa83nqgxk7knxajn98lddz2hg6jnn8ffmnms5wdam7";
+    sha256 = "0lygj7jzjlq4w0mkiir7ycysrd1p1akyvzrppjcchja05mi8wy9p";
   };
   nativeBuildInputs = [ bison flex pkg-config libpng ];
   installFlags = [ "PREFIX=\${out}" ];
@@ -30,7 +30,7 @@ stdenv.mkDerivation rec {
 
         This is a fork of the original RGBDS which aims to make the programs more like other UNIX tools.
       '';
-    maintainers = with maintainers; [ matthewbauer ];
+    maintainers = with maintainers; [ matthewbauer NieDzejkob ];
     platforms = platforms.all;
   };
 }

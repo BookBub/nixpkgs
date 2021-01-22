@@ -3,7 +3,7 @@ import ../make-test-python.nix ({ pkgs, ...}: let
   adminuser = "root";
 in {
   name = "nextcloud-basic";
-  meta = with pkgs.stdenv.lib.maintainers; {
+  meta = with pkgs.lib.maintainers; {
     maintainers = [ globin eqyiel ];
   };
 
@@ -33,7 +33,6 @@ in {
 
       services.nextcloud = {
         enable = true;
-        nginx.enable = true;
         hostName = "nextcloud";
         config = {
           # Don't inherit adminuser since "root" is supposed to be the default

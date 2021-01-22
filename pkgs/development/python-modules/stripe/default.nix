@@ -2,7 +2,7 @@
 
 buildPythonPackage rec {
   pname = "stripe";
-  version = "2.48.0";
+  version = "2.55.0";
 
   # Tests require network connectivity and there's no easy way to disable
   # them. ~ C.
@@ -10,7 +10,7 @@ buildPythonPackage rec {
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1w9ns4jjj0p50im9vbjn084zph1g2sfa6l01ydl98qsyj76f4psi";
+    sha256 = "2eebf023595e8aa9d65d8b46ccc3c716185bb9625d0e39d3956282fd7525848d";
   };
 
   propagatedBuildInputs = [ requests ];

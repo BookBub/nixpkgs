@@ -1,13 +1,13 @@
-{ stdenv, buildPythonPackage, fetchPypi, contextlib2, pytest, mock }:
+{ lib, stdenv, buildPythonPackage, fetchPypi, contextlib2, pytest, mock }:
 
 buildPythonPackage rec {
 
   pname = "schema";
-  version = "0.7.2";
+  version = "0.7.3";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "b536f2375b49fdf56f36279addae98bd86a8afbd58b3c32ce363c464bed5fc1c";
+    sha256 = "4cf529318cfd1e844ecbe02f41f7e5aa027463e7403666a52746f31f04f47a5e";
   };
 
   preConfigure = ''
@@ -19,7 +19,7 @@ buildPythonPackage rec {
   checkInputs = [ pytest mock ];
   checkPhase = "pytest ./test_schema.py";
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Library for validating Python data structures";
     homepage = "https://github.com/keleshev/schema";
     license = licenses.mit;

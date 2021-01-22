@@ -1,7 +1,8 @@
 { mkDerivation
 , lib
 , fetchFromGitHub
-, pkgconfig
+, nix-update-script
+, pkg-config
 , gtk3
 , glib
 , qtbase
@@ -32,7 +33,7 @@ mkDerivation rec {
   ];
 
   nativeBuildInputs = [
-    pkgconfig
+    pkg-config
     qmake
   ];
 
@@ -52,7 +53,7 @@ mkDerivation rec {
   '';
 
   passthru = {
-    updateScript = pantheon.updateScript {
+    updateScript = nix-update-script {
       attrPath = pname;
     };
   };

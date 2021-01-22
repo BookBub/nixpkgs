@@ -1,4 +1,4 @@
-{stdenv, git, perl, ncurses, coreutils, fetchFromGitHub, makeWrapper, ...}:
+{lib, stdenv, git, perl, ncurses, coreutils, fetchFromGitHub, makeWrapper, ...}:
 
 stdenv.mkDerivation rec {
   pname = "diff-so-fancy";
@@ -11,12 +11,19 @@ stdenv.mkDerivation rec {
     sha256 = "0aavxahzha2mms4vdwysk79pa6wzswpfwgsq2hwaxnaf66maahfl";
   };
 
-  # Perl is needed here for patchShebangs
-  nativeBuildInputs = [ perl makeWrapper ];
+  nativeBuildInputs = [
+    makeWrapper
+  ];
 
-  buildPhase = null;
+  buildInputs = [
+    perl # needed for patchShebangs
+  ];
+
+  dontBuild = true;
 
   installPhase = ''
+    runHook preInstall
+
     mkdir -p $out/bin $out/lib/diff-so-fancy
 
     # diff-so-fancy executable searches for it's library relative to
@@ -32,9 +39,11 @@ stdenv.mkDerivation rec {
       --prefix PATH : "${git}/bin" \
       --prefix PATH : "${coreutils}/bin" \
       --prefix PATH : "${ncurses.out}/bin"
+
+    runHook postInstall
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://github.com/so-fancy/diff-so-fancy";
     description = "Good-looking diffs filter for git";
     license = licenses.mit;

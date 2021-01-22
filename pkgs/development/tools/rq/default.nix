@@ -13,7 +13,7 @@ rustPlatform.buildRustPackage rec {
 
   cargoSha256 = "0c5vwy3c5ji602dj64z6jqvcpi2xff03zvjbnwihb3ydqwnb3v67";
 
-  buildInputs = [ llvmPackages.clang-unwrapped v8 ] 
+  buildInputs = [ llvmPackages.clang-unwrapped v8 ]
   ++ lib.optionals stdenv.isDarwin [ libiconv ];
 
   configurePhase = ''
@@ -25,7 +25,6 @@ rustPlatform.buildRustPackage rec {
     description = "A tool for doing record analysis and transformation";
     homepage = "https://github.com/dflemstr/rq";
     license = with licenses; [ asl20 ];
-    maintainers = with maintainers; [ aristid filalex77 ];
-    platforms = platforms.all;
+    maintainers = with maintainers; [ aristid Br1ght0ne ];
   };
 }

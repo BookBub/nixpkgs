@@ -7,7 +7,7 @@ let
   isCross = stdenv.buildPlatform != stdenv.hostPlatform;
   inherit (buildPackages)
     fetchurl removeReferencesTo
-    pkgconfig coreutils gnugrep gnused glibcLocales;
+    pkg-config coreutils gnugrep gnused glibcLocales;
 in
 
 { pname
@@ -21,7 +21,7 @@ in
 , configureFlags ? []
 , buildFlags ? []
 , haddockFlags ? []
-, description ? ""
+, description ? null
 , doCheck ? !isCross && stdenv.lib.versionOlder "7.4" ghc.version
 , doBenchmark ? false
 , doHoogle ? true
@@ -33,9 +33,9 @@ in
 , profilingDetail ? "exported-functions"
 # TODO enable shared libs for cross-compiling
 , enableSharedExecutables ? false
-, enableSharedLibraries ? (ghc.enableShared or false)
+, enableSharedLibraries ? !stdenv.hostPlatform.isStatic && (ghc.enableShared or false)
 , enableDeadCodeElimination ? (!stdenv.isDarwin)  # TODO: use -dead_strip for darwin
-, enableStaticLibraries ? !stdenv.hostPlatform.isWindows
+, enableStaticLibraries ? !(stdenv.hostPlatform.isWindows or stdenv.hostPlatform.isWasm)
 , enableHsc2hsViaAsm ? stdenv.hostPlatform.isWindows && stdenv.lib.versionAtLeast ghc.version "8.4"
 , extraLibraries ? [], librarySystemDepends ? [], executableSystemDepends ? []
 # On macOS, statically linking against system frameworks is not supported;
@@ -50,23 +50,24 @@ in
 , jailbreak ? false
 , license
 , enableParallelBuilding ? true
-, maintainers ? []
+, maintainers ? null
 , doCoverage ? false
 , doHaddock ? !(ghc.isHaLVM or false)
 , passthru ? {}
-, pkgconfigDepends ? [], libraryPkgconfigDepends ? [], executablePkgconfigDepends ? [], testPkgconfigDepends ? [], benchmarkPkgconfigDepends ? []
+, pkg-configDepends ? [], libraryPkgconfigDepends ? [], executablePkgconfigDepends ? [], testPkgconfigDepends ? [], benchmarkPkgconfigDepends ? []
 , testDepends ? [], testHaskellDepends ? [], testSystemDepends ? [], testFrameworkDepends ? []
 , benchmarkDepends ? [], benchmarkHaskellDepends ? [], benchmarkSystemDepends ? [], benchmarkFrameworkDepends ? []
 , testTarget ? ""
 , broken ? false
-, preCompileBuildDriver ? "", postCompileBuildDriver ? ""
-, preUnpack ? "", postUnpack ? ""
-, patches ? [], patchPhase ? "", prePatch ? "", postPatch ? ""
-, preConfigure ? "", postConfigure ? ""
-, preBuild ? "", postBuild ? ""
-, installPhase ? "", preInstall ? "", postInstall ? ""
-, checkPhase ? "", preCheck ? "", postCheck ? ""
-, preFixup ? "", postFixup ? ""
+, preCompileBuildDriver ? null, postCompileBuildDriver ? null
+, preUnpack ? null, postUnpack ? null
+, patches ? null, patchPhase ? null, prePatch ? "", postPatch ? ""
+, preConfigure ? null, postConfigure ? null
+, preBuild ? null, postBuild ? null
+, preHaddock ? null, postHaddock ? null
+, installPhase ? null, preInstall ? null, postInstall ? null
+, checkPhase ? null, preCheck ? null, postCheck ? null
+, preFixup ? null, postFixup ? null
 , shellHook ? ""
 , coreSetup ? false # Use only core packages to build Setup.hs.
 , useCpphs ? false
@@ -90,6 +91,7 @@ assert editedCabalFile != null -> revision != null;
 # --enable-static does not work on windows. This is a bug in GHC.
 # --enable-static will pass -staticlib to ghc, which only works for mach-o and elf.
 assert stdenv.hostPlatform.isWindows -> enableStaticLibraries == false;
+assert stdenv.hostPlatform.isWasm -> enableStaticLibraries == false;
 
 let
 
@@ -232,7 +234,7 @@ let
 
   isHaskellPkg = x: x ? isHaskellLibrary;
 
-  allPkgconfigDepends = pkgconfigDepends ++ libraryPkgconfigDepends ++ executablePkgconfigDepends ++
+  allPkgconfigDepends = pkg-configDepends ++ libraryPkgconfigDepends ++ executablePkgconfigDepends ++
                         optionals doCheck testPkgconfigDepends ++ optionals doBenchmark benchmarkPkgconfigDepends;
 
   depsBuildBuild = [ nativeGhc ];
@@ -241,7 +243,7 @@ let
     optionals doCheck testToolDepends ++
     optionals doBenchmark benchmarkToolDepends;
   nativeBuildInputs =
-    [ ghc removeReferencesTo ] ++ optional (allPkgconfigDepends != []) pkgconfig ++
+    [ ghc removeReferencesTo ] ++ optional (allPkgconfigDepends != []) pkg-config ++
     setupHaskellDepends ++ collectedToolDepends;
   propagatedBuildInputs = buildDepends ++ libraryHaskellDepends ++ executableHaskellDepends ++ libraryFrameworkDepends;
   otherBuildInputsHaskell =
@@ -283,7 +285,7 @@ let
   '';
 in stdenv.lib.fix (drv:
 
-assert allPkgconfigDepends != [] -> pkgconfig != null;
+assert allPkgconfigDepends != [] -> pkg-config != null;
 
 stdenv.mkDerivation ({
   name = "${pname}-${version}";
@@ -530,7 +532,7 @@ stdenv.mkDerivation ({
         libraryPkgconfigDepends
         librarySystemDepends
         libraryToolDepends
-        pkgconfigDepends
+        pkg-configDepends
         setupHaskellDepends
         ;
     } // stdenv.lib.optionalAttrs doCheck {
@@ -614,7 +616,7 @@ stdenv.mkDerivation ({
 
         depsBuildBuild = stdenv.lib.optional isCross ghcEnvForBuild;
         nativeBuildInputs =
-          [ ghcEnv ] ++ optional (allPkgconfigDepends != []) pkgconfig ++
+          [ ghcEnv ] ++ optional (allPkgconfigDepends != []) pkg-config ++
           collectedToolDepends;
         buildInputs =
           otherBuildInputsSystem;
@@ -636,34 +638,36 @@ stdenv.mkDerivation ({
   };
 
   meta = { inherit homepage license platforms; }
-         // optionalAttrs broken               { inherit broken; }
-         // optionalAttrs (description != "")  { inherit description; }
-         // optionalAttrs (maintainers != [])  { inherit maintainers; }
-         // optionalAttrs (hydraPlatforms != null) { inherit hydraPlatforms; }
+         // optionalAttrs (args ? broken)         { inherit broken; }
+         // optionalAttrs (args ? description)    { inherit description; }
+         // optionalAttrs (args ? maintainers)    { inherit maintainers; }
+         // optionalAttrs (args ? hydraPlatforms) { inherit hydraPlatforms; }
          ;
 
 }
-// optionalAttrs (preCompileBuildDriver != "")  { inherit preCompileBuildDriver; }
-// optionalAttrs (postCompileBuildDriver != "") { inherit postCompileBuildDriver; }
-// optionalAttrs (preUnpack != "")      { inherit preUnpack; }
-// optionalAttrs (postUnpack != "")     { inherit postUnpack; }
-// optionalAttrs (patches != [])        { inherit patches; }
-// optionalAttrs (patchPhase != "")     { inherit patchPhase; }
-// optionalAttrs (preConfigure != "")   { inherit preConfigure; }
-// optionalAttrs (postConfigure != "")  { inherit postConfigure; }
-// optionalAttrs (preBuild != "")       { inherit preBuild; }
-// optionalAttrs (postBuild != "")      { inherit postBuild; }
-// optionalAttrs (doBenchmark)          { inherit doBenchmark; }
-// optionalAttrs (checkPhase != "")     { inherit checkPhase; }
-// optionalAttrs (preCheck != "")       { inherit preCheck; }
-// optionalAttrs (postCheck != "")      { inherit postCheck; }
-// optionalAttrs (preInstall != "")     { inherit preInstall; }
-// optionalAttrs (installPhase != "")   { inherit installPhase; }
-// optionalAttrs (postInstall != "")    { inherit postInstall; }
-// optionalAttrs (preFixup != "")       { inherit preFixup; }
-// optionalAttrs (postFixup != "")      { inherit postFixup; }
-// optionalAttrs (dontStrip)            { inherit dontStrip; }
-// optionalAttrs (hardeningDisable != []) { inherit hardeningDisable; }
+// optionalAttrs (args ? preCompileBuildDriver)  { inherit preCompileBuildDriver; }
+// optionalAttrs (args ? postCompileBuildDriver) { inherit postCompileBuildDriver; }
+// optionalAttrs (args ? preUnpack)              { inherit preUnpack; }
+// optionalAttrs (args ? postUnpack)             { inherit postUnpack; }
+// optionalAttrs (args ? patches)                { inherit patches; }
+// optionalAttrs (args ? patchPhase)             { inherit patchPhase; }
+// optionalAttrs (args ? preConfigure)           { inherit preConfigure; }
+// optionalAttrs (args ? postConfigure)          { inherit postConfigure; }
+// optionalAttrs (args ? preBuild)               { inherit preBuild; }
+// optionalAttrs (args ? postBuild)              { inherit postBuild; }
+// optionalAttrs (args ? doBenchmark)            { inherit doBenchmark; }
+// optionalAttrs (args ? checkPhase)             { inherit checkPhase; }
+// optionalAttrs (args ? preCheck)               { inherit preCheck; }
+// optionalAttrs (args ? postCheck)              { inherit postCheck; }
+// optionalAttrs (args ? preHaddock)             { inherit preHaddock; }
+// optionalAttrs (args ? postHaddock)            { inherit postHaddock; }
+// optionalAttrs (args ? preInstall)             { inherit preInstall; }
+// optionalAttrs (args ? installPhase)           { inherit installPhase; }
+// optionalAttrs (args ? postInstall)            { inherit postInstall; }
+// optionalAttrs (args ? preFixup)               { inherit preFixup; }
+// optionalAttrs (args ? postFixup)              { inherit postFixup; }
+// optionalAttrs (args ? dontStrip)              { inherit dontStrip; }
+// optionalAttrs (args ? hardeningDisable)       { inherit hardeningDisable; }
 // optionalAttrs (stdenv.buildPlatform.libc == "glibc"){ LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive"; }
 )
 )

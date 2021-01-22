@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , buildPythonPackage
 , fetchPypi
 , zope-deferredimport
@@ -12,11 +12,11 @@
 
 buildPythonPackage rec {
   pname = "zope.component";
-  version = "4.6.1";
+  version = "4.6.2";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "d9c7c27673d787faff8a83797ce34d6ebcae26a370e25bddb465ac2182766aca";
+    sha256 = "91628918218b3e6f6323de2a7b845e09ddc5cae131c034896c051b084bba3c92";
   };
 
   propagatedBuildInputs = [
@@ -27,7 +27,7 @@ buildPythonPackage rec {
   # ignore tests because of a circular dependency on zope_security
   doCheck = false;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://github.com/zopefoundation/zope.component";
     description = "Zope Component Architecture";
     license = licenses.zpl20;

@@ -2,16 +2,18 @@
 
 buildGoModule rec {
   pname = "netdata-go.d.plugin";
-  version = "0.19.2";
+  version = "0.26.2";
 
   src = fetchFromGitHub {
     owner = "netdata";
     repo = "go.d.plugin";
     rev = "v${version}";
-    sha256 = "03a67kvhickzg96jvzxhg1jih48m96rl4mkg0wgmbi7a676dl7lq";
+    sha256 = "1jy5pc1ihyrg6sqyw0d48bsqa7kr7kqz10k3845g958vgfmfig59";
   };
 
-  vendorSha256 = "0mmnkkzpv8lmxn11idikddmjinxv1y823ny0wxp271agiinyfpn8";
+  vendorSha256 = "16b6i9cpk8j7292qgjvida70rg7nixi6g94wayzikx01vmdbis5r";
+
+  doCheck = false;
 
   buildFlagsArray = [ "-ldflags=-s -w -X main.version=${version}" ];
 

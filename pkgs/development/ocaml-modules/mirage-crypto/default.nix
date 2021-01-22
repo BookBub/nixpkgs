@@ -4,11 +4,11 @@ buildDunePackage rec {
   minimumOCamlVersion = "4.08";
 
   pname = "mirage-crypto";
-  version = "0.8.1";
+  version = "0.8.10";
 
   src = fetchurl {
     url = "https://github.com/mirage/mirage-crypto/releases/download/v${version}/mirage-crypto-v${version}.tbz";
-    sha256 = "13qjisijayviw1s77s74f7klkrjj470vhj4b21cpif7jj2i4ljgk";
+    sha256 = "8a5976fe7837491d2fbd1917b77524776f70ae590e9f55cf757cc8951b5481fc";
   };
 
   useDune2 = true;

@@ -1,21 +1,28 @@
-{ stdenv, buildGoModule, fetchFromGitHub }:
+{ lib, stdenv, buildGoModule, fetchFromGitHub, callPackage}:
 
 buildGoModule rec {
   pname = "croc";
-  version = "8.0.12";
+  version = "8.6.7";
 
   src = fetchFromGitHub {
     owner = "schollz";
     repo = pname;
     rev = "v${version}";
-    sha256 = "0j0cdxblh0h68a55jvljzahj851yba354xv2w5gg9hjzjd38769x";
+    sha256 = "sha256-+Hsxu/gqMKRWBJT7JqOw8Ck+5fQG0D3wSJBb9fgkPsw=";
   };
 
-  vendorSha256 = "1d6gg7c0rb45zy9rilacn2xyr3kcb7acsh389hk6lppipmhpzr5a";
+  vendorSha256 = "sha256-ULXC8lVu/TTSzYJ4EpAQvDwntRV0+Vmr8VPaEe54qdA=";
+
+  doCheck = false;
 
   subPackages = [ "." ];
 
-  meta = with stdenv.lib; {
+  passthru = {
+    tests = {
+      local-relay = callPackage ./test-local-relay.nix {};
+    };
+  };
+  meta = with lib; {
     description =
       "Easily and securely send things from one computer to another";
     homepage = "https://github.com/schollz/croc";

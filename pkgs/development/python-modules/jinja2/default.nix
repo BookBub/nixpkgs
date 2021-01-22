@@ -1,9 +1,11 @@
-{ stdenv
+{ lib, stdenv
 , buildPythonPackage
 , isPy3k
 , fetchPypi
 , pytest
-, markupsafe }:
+, markupsafe
+, setuptools
+}:
 
 buildPythonPackage rec {
   pname = "Jinja2";
@@ -15,7 +17,7 @@ buildPythonPackage rec {
   };
 
   checkInputs = [ pytest ];
-  propagatedBuildInputs = [ markupsafe ];
+  propagatedBuildInputs = [ markupsafe setuptools ];
 
   # Multiple tests run out of stack space on 32bit systems with python2.
   # See https://github.com/pallets/jinja/issues/1158
@@ -25,7 +27,7 @@ buildPythonPackage rec {
     pytest -v tests
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "http://jinja.pocoo.org/";
     description = "Stand-alone template engine";
     license = licenses.bsd3;

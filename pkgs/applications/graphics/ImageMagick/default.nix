@@ -1,4 +1,4 @@
-{ lib, stdenv, fetchFromGitHub, fetchpatch, pkgconfig, libtool
+{ lib, stdenv, fetchFromGitHub, fetchpatch, pkg-config, libtool
 , bzip2, zlib, libX11, libXext, libXt, fontconfig, freetype, ghostscript, libjpeg, djvulibre
 , lcms2, openexr, libpng, librsvg, libtiff, libxml2, openjpeg, libwebp, fftw, libheif, libde265
 , ApplicationServices
@@ -10,11 +10,12 @@ let
     else if stdenv.hostPlatform.system == "x86_64-linux" || stdenv.hostPlatform.system == "x86_64-darwin" then "x86-64"
     else if stdenv.hostPlatform.system == "armv7l-linux" then "armv7l"
     else if stdenv.hostPlatform.system == "aarch64-linux" then "aarch64"
+    else if stdenv.hostPlatform.system == "powerpc64le-linux" then "ppc64le"
     else throw "ImageMagick is not supported on this platform.";
 
   cfg = {
-    version = "6.9.11-14";
-    sha256 = "0x51vf48g75cfp0mbwf3ckmlwa6v00592xx3gvrqzjzx7vlayjyg";
+    version = "6.9.11-29";
+    sha256 = "0adjdpi91ya0g3v7y503n95833m25aibkim5swg5lnwjrba407hg";
     patches = [];
   }
     # Freeze version on mingw so we don't need to port the patch too often.
@@ -61,7 +62,7 @@ stdenv.mkDerivation {
       [ "--enable-static" "--disable-shared" ] # due to libxml2 being without DLLs ATM
     ;
 
-  nativeBuildInputs = [ pkgconfig libtool ];
+  nativeBuildInputs = [ pkg-config libtool ];
 
   buildInputs =
     [ zlib fontconfig freetype ghostscript
@@ -84,10 +85,10 @@ stdenv.mkDerivation {
     moveToOutput "bin/*-config" "$dev"
     moveToOutput "lib/ImageMagick-*/config-Q16" "$dev" # includes configure params
     for file in "$dev"/bin/*-config; do
-      substituteInPlace "$file" --replace "${pkgconfig}/bin/pkg-config -config" \
-        ${pkgconfig}/bin/${pkgconfig.targetPrefix}pkg-config
-      substituteInPlace "$file" --replace ${pkgconfig}/bin/pkg-config \
-        "PKG_CONFIG_PATH='$dev/lib/pkgconfig' '${pkgconfig}/bin/${pkgconfig.targetPrefix}pkg-config'"
+      substituteInPlace "$file" --replace "${pkg-config}/bin/pkg-config -config" \
+        ${pkg-config}/bin/${pkg-config.targetPrefix}pkg-config
+      substituteInPlace "$file" --replace ${pkg-config}/bin/pkg-config \
+        "PKG_CONFIG_PATH='$dev/lib/pkgconfig' '${pkg-config}/bin/${pkg-config.targetPrefix}pkg-config'"
     done
   '' + lib.optionalString (ghostscript != null) ''
     for la in $out/lib/*.la; do
@@ -95,7 +96,7 @@ stdenv.mkDerivation {
     done
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "http://www.imagemagick.org/";
     description = "A software suite to create, edit, compose, or convert bitmap images";
     platforms = platforms.linux ++ platforms.darwin;

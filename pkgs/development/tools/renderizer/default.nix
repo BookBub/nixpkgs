@@ -1,4 +1,4 @@
-{ stdenv, buildGoModule, fetchFromGitHub }:
+{ lib, stdenv, buildGoModule, fetchFromGitHub }:
 
 buildGoModule rec {
   pname = "renderizer";
@@ -13,7 +13,9 @@ buildGoModule rec {
 
   vendorSha256 = "13z357ww4j5bmmy8ag6d6gd5b2dib8kby73q8317pqnqzaxrrbcj";
 
-  meta = with stdenv.lib; {
+  doCheck = false;
+
+  meta = with lib; {
     description = "CLI to render Go template text files";
     inherit (src.meta) homepage;
     license = licenses.gpl3;

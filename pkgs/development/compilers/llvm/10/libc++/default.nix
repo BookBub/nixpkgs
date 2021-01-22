@@ -1,11 +1,12 @@
 { lib, stdenv, fetch, cmake, python3, libcxxabi, fixDarwinDylibNames, version
-, enableShared ? true }:
+, enableShared ? !stdenv.hostPlatform.isStatic
+}:
 
 stdenv.mkDerivation {
   pname = "libc++";
   inherit version;
 
-  src = fetch "libcxx" "1isnj78diknh0nvd73mlq8p8g209f9bab2mbysq826bg2wzql3r7";
+  src = fetch "libcxx" "0v78bfr6h2zifvdqnj2wlfk4pvxzrqn3hg1v6lqk3y12bx9p9xny";
 
   postUnpack = ''
     unpackFile ${libcxxabi.src}
@@ -21,9 +22,10 @@ stdenv.mkDerivation {
     patchShebangs utils/cat_files.py
   '';
   nativeBuildInputs = [ cmake ]
-    ++ stdenv.lib.optional (stdenv.hostPlatform.isMusl || stdenv.hostPlatform.isWasi) python3;
+    ++ stdenv.lib.optional (stdenv.hostPlatform.isMusl || stdenv.hostPlatform.isWasi) python3
+    ++ stdenv.lib.optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
 
-  buildInputs = [ libcxxabi ] ++ lib.optional stdenv.isDarwin fixDarwinDylibNames;
+  buildInputs = [ libcxxabi ];
 
   cmakeFlags = [
     "-DLIBCXX_LIBCXXABI_LIB_PATH=${libcxxabi}/lib"
@@ -36,8 +38,6 @@ stdenv.mkDerivation {
       "-DLIBCXX_ENABLE_FILESYSTEM=OFF"
       "-DLIBCXX_ENABLE_EXCEPTIONS=OFF"
     ] ++ stdenv.lib.optional (!enableShared) "-DLIBCXX_ENABLE_SHARED=OFF";
-
-  enableParallelBuilding = true;
 
   passthru = {
     isLLVM = true;

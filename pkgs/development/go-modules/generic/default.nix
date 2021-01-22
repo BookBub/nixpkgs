@@ -1,4 +1,4 @@
-{ go, cacert, git, lib, removeReferencesTo, stdenv }:
+{ go, cacert, git, lib, stdenv, vend }:
 
 { name ? "${args'.pname}-${args'.version}"
 , src
@@ -20,20 +20,21 @@
 , vendorSha256
 # Whether to delete the vendor folder supplied with the source.
 , deleteVendor ? false
-
-, modSha256 ? null
+# Whether to run the vend tool to regenerate the vendor directory.
+# This is useful if any dependency contain C files.
+, runVend ? false
 
 # We want parallel builds by default
 , enableParallelBuilding ? true
-
-# Disabled flag
-, disabled ? false
 
 # Do not enable this without good reason
 # IE: programs coupled with the compiler
 , allowGoReference ? false
 
 , meta ? {}
+
+# Not needed with buildGoModule
+, goPackagePath ? null
 
 , ... }@args':
 
@@ -42,13 +43,7 @@ with builtins;
 let
   args = removeAttrs args' [ "overrideModAttrs" "vendorSha256" "disabled" ];
 
-  removeReferences = [ ] ++ lib.optional (!allowGoReference) go;
-
-  removeExpr = refs: ''remove-references-to ${lib.concatMapStrings (ref: " -t ${ref}") refs}'';
-
-  deleteFlag = if deleteVendor then "true" else "false";
-
-  go-modules = if vendorSha256 != null then go.stdenv.mkDerivation (let modArgs = {
+  go-modules = if vendorSha256 != null then stdenv.mkDerivation (let modArgs = {
 
     name = "${name}-go-modules";
 
@@ -78,16 +73,26 @@ let
 
     buildPhase = args.modBuildPhase or ''
       runHook preBuild
-
-      if [ ${deleteFlag} == "true" ]; then
+    '' + lib.optionalString (deleteVendor == true) ''
+      if [ ! -d vendor ]; then
+        echo "vendor folder does not exist, 'deleteVendor' is not needed"
+        exit 10
+      else
         rm -rf vendor
       fi
-
-      if [ -e vendor ]; then
-        echo "vendor folder exists, please set 'vendorSha256=null;' or 'deleteVendor=true;' in your expression"
+    '' + ''
+      if [ -d vendor ]; then
+        echo "vendor folder exists, please set 'vendorSha256 = null;' in your expression"
         exit 10
       fi
+
+    ${if runVend then ''
+      echo "running 'vend' to rewrite vendor folder"
+      ${vend}/bin/vend
+    '' else ''
       go mod vendor
+    ''}
+
       mkdir -p vendor
 
       runHook postBuild
@@ -111,13 +116,13 @@ let
       }
   ) // overrideModAttrs modArgs) else "";
 
-  package = go.stdenv.mkDerivation (args // {
-    nativeBuildInputs = [ removeReferencesTo go ] ++ nativeBuildInputs;
+  package = stdenv.mkDerivation (args // {
+    nativeBuildInputs = [ go ] ++ nativeBuildInputs;
 
     inherit (go) GOOS GOARCH;
 
     GO111MODULE = "on";
-    GOFLAGS = "-mod=vendor";
+    GOFLAGS = [ "-mod=vendor" ] ++ lib.optionals (!allowGoReference) [ "-trimpath" ];
 
     configurePhase = args.configurePhase or ''
       runHook preConfigure
@@ -127,10 +132,10 @@ let
       export GOSUMDB=off
       export GOPROXY=off
       cd "$modRoot"
-      if [ -n "${go-modules}" ]; then
-          rm -rf vendor
-          ln -s ${go-modules} vendor
-      fi
+    '' + lib.optionalString (go-modules != "") ''
+      rm -rf vendor
+      cp -r --reflink=auto ${go-modules} vendor
+    '' + ''
 
       runHook postConfigure
     '';
@@ -199,7 +204,7 @@ let
       runHook postBuild
     '';
 
-    doCheck = args.doCheck or false;
+    doCheck = args.doCheck or true;
     checkPhase = args.checkPhase or ''
       runHook preCheck
 
@@ -220,10 +225,6 @@ let
       runHook postInstall
     '';
 
-    preFixup = (args.preFixup or "") + ''
-      find $out/bin -type f -exec ${removeExpr removeReferences} '{}' + || true
-    '';
-
     strictDeps = true;
 
     disallowedReferences = lib.optional (!allowGoReference) go;
@@ -239,10 +240,7 @@ let
                     [ lib.maintainers.kalbasit ];
     };
   });
-in if disabled then
-  throw "${package.name} not supported for go ${go.meta.branch}"
-else if modSha256 != null then
-  lib.warn "modSha256 is deprecated and will be removed in the next release (20.09), use vendorSha256 instead" (
-    import ./old.nix { inherit go cacert git lib removeReferencesTo stdenv; } args')
+in if (goPackagePath != null) then
+  throw "`goPackagePath` not needed with `buildGoModule`"
 else
   package

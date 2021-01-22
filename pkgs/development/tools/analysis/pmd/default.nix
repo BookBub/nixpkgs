@@ -2,11 +2,11 @@
 
 stdenv.mkDerivation rec {
   pname = "pmd";
-  version = "6.25.0";
+  version = "6.29.0";
 
   src = fetchurl {
     url = "mirror://sourceforge/pmd/pmd-bin-${version}.zip";
-    sha256 = "0ykg0wylyfiwjlhkbfjqfam34174paihrw7x1dwfq9anyn5bjf0k";
+    sha256 = "08iibpf9jhkk7ihsmlm85wpjwy1bvznbvggvqyw6109f9gzlrvvq";
   };
 
   nativeBuildInputs = [ unzip makeWrapper ];

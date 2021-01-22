@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , pkg-config
 , installShellFiles
@@ -16,22 +16,24 @@
 
 buildGoModule rec {
   pname = "podman";
-  version = "2.0.2";
+  version = "2.2.1";
 
   src = fetchFromGitHub {
     owner = "containers";
     repo = "podman";
     rev = "v${version}";
-    sha256 = "12iqj71xjszbjbbz5f2dk5chcvfrrq0n737ki7xxkjcw38k2cnqz";
+    sha256 = "166ch73pqx76ppfkhfg3zqxr71jf5pk5asl5bb5rwhyzf7f057q5";
   };
 
   vendorSha256 = null;
+
+  doCheck = false;
 
   outputs = [ "out" "man" ];
 
   nativeBuildInputs = [ pkg-config go-md2man installShellFiles ];
 
-  buildInputs = stdenv.lib.optionals stdenv.isLinux [
+  buildInputs = lib.optionals stdenv.isLinux [
     btrfs-progs
     gpgme
     libapparmor
@@ -49,7 +51,7 @@ buildGoModule rec {
     make docs
   '';
 
-  installPhase = stdenv.lib.optionalString stdenv.isDarwin ''
+  installPhase = lib.optionalString stdenv.isDarwin ''
     mv bin/{podman-remote,podman}
   '' + ''
     install -Dm555 bin/podman $out/bin/podman
@@ -58,9 +60,9 @@ buildGoModule rec {
     MANDIR=$man/share/man make install.man-nobuild
   '';
 
-  passthru.tests.podman = nixosTests.podman;
+  passthru.tests = { inherit (nixosTests) podman; };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://podman.io/";
     description = "A program for managing pods, containers and container images";
     license = licenses.asl20;

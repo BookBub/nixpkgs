@@ -1,9 +1,9 @@
-{ stdenv
+{ lib, stdenv
 , mkDerivation
 , fetchFromGitHub
 , fetchpatch
 , cmake
-, pkgconfig
+, pkg-config
 
 , qtbase
 , qttools
@@ -18,23 +18,21 @@
 
 mkDerivation rec {
   pname = "nomacs";
-  version = "3.15.1616";
+  version = "3.17.2206";
 
   src = fetchFromGitHub {
     owner = "nomacs";
     repo = "nomacs";
     rev = version;
-    sha256 = "0g1saqf31zncqdiwk7aaf951j3g33bg0vcjcr5mvg600jxiinw8j";
+    sha256 = "1bq7bv4p7w67172y893lvpk90d6fgdpnylynbj2kn8m2hs6khya4";
   };
-
-  enableParallelBuilding = true;
 
   setSourceRoot = ''
     sourceRoot=$(echo */ImageLounge)
   '';
 
   nativeBuildInputs = [cmake
-                       pkgconfig];
+                       pkg-config];
 
   buildInputs = [qtbase
                  qttools
@@ -52,10 +50,10 @@ mkDerivation rec {
                 "-DENABLE_TRANSLATIONS=ON"
                 "-DUSE_SYSTEM_QUAZIP=ON"];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://nomacs.org";
     description = "Qt-based image viewer";
-    maintainers = with stdenv.lib.maintainers; [ mindavi ];
+    maintainers = with lib.maintainers; [ mindavi ];
     license = licenses.gpl3Plus;
     repositories.git = "https://github.com/nomacs/nomacs.git";
     inherit (qtbase.meta) platforms;

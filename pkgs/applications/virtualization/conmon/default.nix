@@ -1,4 +1,5 @@
-{ stdenv
+{ lib
+, stdenv
 , fetchFromGitHub
 , pkg-config
 , glib
@@ -9,24 +10,29 @@
 
 stdenv.mkDerivation rec {
   pname = "conmon";
-  version = "2.0.19";
+  version = "2.0.25";
 
   src = fetchFromGitHub {
     owner = "containers";
     repo = pname;
     rev = "v${version}";
-    sha256 = "005sz8aimbfm12d99q79yvsqczxbvbbgc725pavcbly3k1qva207";
+    sha256 = "sha256-u22irZ9AC1W2AVJ1OD1gLzTH4NOgRkZekZ78rNKXnps=";
   };
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ glib systemd ]
-  ++ stdenv.lib.optionals (!stdenv.hostPlatform.isMusl) [ glibc glibc.static ];
+  ++ lib.optionals (!stdenv.hostPlatform.isMusl) [ glibc glibc.static ];
 
-  installFlags = [ "PREFIX=$(out)" ];
+  # manpage requires building the vendored go-md2man
+  makeFlags = [ "bin/conmon" ];
 
-  passthru.tests.podman = nixosTests.podman;
+  installPhase = ''
+    install -D bin/conmon -t $out/bin
+  '';
 
-  meta = with stdenv.lib; {
+  passthru.tests = { inherit (nixosTests) cri-o podman; };
+
+  meta = with lib; {
     homepage = "https://github.com/containers/conmon";
     description = "An OCI container runtime monitor";
     license = licenses.asl20;

@@ -1,11 +1,12 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , addOpenGLRunpath
 , cmake
 , rocm-cmake
 , clang
 , clang-unwrapped
-, libGLU
+, glew
+, libglvnd
 , libX11
 , lld
 , llvm
@@ -18,20 +19,15 @@
 , rocm-thunk
 }:
 
-let
-  version = "3.5.0";
-  tag = "roc-${version}";
-in stdenv.mkDerivation rec {
-  inherit version;
-
+stdenv.mkDerivation rec {
   pname = "rocm-opencl-runtime";
+  version = "4.0.0";
 
   src = fetchFromGitHub {
     owner = "RadeonOpenCompute";
     repo = "ROCm-OpenCL-Runtime";
-    rev = tag;
-    sha256 = "1wrr6mmn4gf6i0vxp4yqk0ny2wglvj1jfj50il8czjwy0cwmhykk";
-    name = "ROCm-OpenCL-Runtime-${tag}-src";
+    rev = "rocm-${version}";
+    hash = "sha256-kW5jTDlQtXQ0i4ADJEnmESxjcLCt4QZCYJ1ouIsk4YE=";
   };
 
   nativeBuildInputs = [ cmake rocm-cmake ];
@@ -39,7 +35,8 @@ in stdenv.mkDerivation rec {
   buildInputs = [
     clang
     clang-unwrapped
-    libGLU
+    glew
+    libglvnd
     libX11
     lld
     llvm
@@ -63,6 +60,12 @@ in stdenv.mkDerivation rec {
 
   dontStrip = true;
 
+  # Remove clinfo, which is already provided through the
+  # `clinfo` package.
+  postInstall = ''
+    rm -rf $out/bin
+  '';
+
   # Fix the ICD installation path for NixOS
   postPatch = ''
     substituteInPlace khronos/icd/loader/linux/icd_linux.c \
@@ -70,11 +73,7 @@ in stdenv.mkDerivation rec {
     echo 'add_dependencies(amdocl64 OpenCL)' >> amdocl/CMakeLists.txt
   '';
 
-  preFixup = ''
-    patchelf --set-rpath "$out/lib" $out/bin/clinfo
-  '';
-
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "OpenCL runtime for AMD GPUs, part of the ROCm stack";
     homepage = "https://github.com/RadeonOpenCompute/ROCm-OpenCL-Runtime";
     license = with licenses; [ asl20 mit ];

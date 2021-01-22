@@ -8,6 +8,7 @@
 { name ? ""
 , stdenvNoCC
 , cc ? null, libc ? null, bintools, coreutils ? null, shell ? stdenvNoCC.shell
+, gccForLibs ? null
 , zlib ? null
 , nativeTools, noLibc ? false, nativeLibc, nativePrefix ? ""
 , propagateDoc ? cc != null && cc ? man
@@ -56,25 +57,44 @@ let
   suffixSalt = replaceStrings ["-" "."] ["_" "_"] targetPlatform.config;
 
   expand-response-params =
-    if buildPackages.stdenv.hasCC && buildPackages.stdenv.cc != "/dev/null"
+    if (buildPackages.stdenv.hasCC or false) && buildPackages.stdenv.cc != "/dev/null"
     then import ../expand-response-params { inherit (buildPackages) stdenv; }
     else "";
+
+  useGccForLibs = isClang
+    && libcxx == null
+    && !(stdenv.targetPlatform.useLLVM or false)
+    && !(stdenv.targetPlatform.useAndroidPrebuilt or false)
+    && !(stdenv.targetPlatform.isiOS or false)
+    && gccForLibs != null;
 
   # older compilers (for example bootstrap's GCC 5) fail with -march=too-modern-cpu
   isGccArchSupported = arch:
     if isGNU then
-      { skylake        = versionAtLeast ccVersion "6.0";
+      { # Intel
+        skylake        = versionAtLeast ccVersion "6.0";
         skylake-avx512 = versionAtLeast ccVersion "6.0";
         cannonlake     = versionAtLeast ccVersion "8.0";
         icelake-client = versionAtLeast ccVersion "8.0";
         icelake-server = versionAtLeast ccVersion "8.0";
+        cascadelake    = versionAtLeast ccVersion "9.0";
+        cooperlake     = versionAtLeast ccVersion "10.0";
+        tigerlake      = versionAtLeast ccVersion "10.0";
         knm            = versionAtLeast ccVersion "8.0";
+        # AMD
+        znver1         = versionAtLeast ccVersion "6.0";
+        znver2         = versionAtLeast ccVersion "9.0";
+        znver3         = versionAtLeast ccVersion "11.0";
       }.${arch} or true
     else if isClang then
-      { cannonlake     = versionAtLeast ccVersion "5.0";
+      { # Intel
+        cannonlake     = versionAtLeast ccVersion "5.0";
         icelake-client = versionAtLeast ccVersion "7.0";
         icelake-server = versionAtLeast ccVersion "7.0";
         knm            = versionAtLeast ccVersion "7.0";
+        # AMD
+        znver1         = versionAtLeast ccVersion "4.0";
+        znver2         = versionAtLeast ccVersion "9.0";
       }.${arch} or true
     else
       false;
@@ -208,6 +228,7 @@ stdenv.mkDerivation {
       wrap ${targetPrefix}gfortran $wrapper $ccPath/${targetPrefix}gfortran
       ln -sv ${targetPrefix}gfortran $out/bin/${targetPrefix}g77
       ln -sv ${targetPrefix}gfortran $out/bin/${targetPrefix}f77
+      export named_fc=${targetPrefix}gfortran
     ''
 
     + optionalString cc.langJava or false ''
@@ -226,8 +247,8 @@ stdenv.mkDerivation {
 
   setupHooks = [
     ../setup-hooks/role.bash
-    ./setup-hook.sh
-  ];
+  ] ++ stdenv.lib.optional (cc.langC or true) ./setup-hook.sh
+    ++ stdenv.lib.optional (cc.langFortran or false) ./fortran-hook.sh;
 
   postFixup =
     # Ensure flags files exists, as some other programs cat them. (That these
@@ -262,11 +283,11 @@ stdenv.mkDerivation {
     ##
     ## GCC libs for non-GCC support
     ##
-    + optionalString (isClang && libcxx == null && cc ? gcc) ''
+    + optionalString useGccForLibs ''
 
-      echo "-B${cc.gcc}/lib/gcc/${targetPlatform.config}/${cc.gcc.version}" >> $out/nix-support/cc-cflags
-      echo "-L${cc.gcc}/lib/gcc/${targetPlatform.config}/${cc.gcc.version}" >> $out/nix-support/cc-ldflags
-      echo "-L${cc.gcc.lib}/${targetPlatform.config}/lib" >> $out/nix-support/cc-ldflags
+      echo "-B${gccForLibs}/lib/gcc/${targetPlatform.config}/${gccForLibs.version}" >> $out/nix-support/cc-cflags
+      echo "-L${gccForLibs}/lib/gcc/${targetPlatform.config}/${gccForLibs.version}" >> $out/nix-support/cc-ldflags
+      echo "-L${gccForLibs.lib}/${targetPlatform.config}/lib" >> $out/nix-support/cc-ldflags
     ''
 
     ##
@@ -287,7 +308,7 @@ stdenv.mkDerivation {
     + optionalString (libc != null) (''
       touch "$out/nix-support/libc-cflags"
       touch "$out/nix-support/libc-ldflags"
-      echo "-B${libc_lib}${libc.libdir or "/lib/"}" >> $out/nix-support/libc-cflags
+      echo "-B${libc_lib}${libc.libdir or "/lib/"}" >> $out/nix-support/libc-crt1-cflags
     '' + optionalString (!(cc.langD or false)) ''
       echo "-idirafter ${libc_dev}${libc.incdir or "/include"}" >> $out/nix-support/libc-cflags
     '' + optionalString (isGNU && (!(cc.langD or false))) ''
@@ -306,14 +327,15 @@ stdenv.mkDerivation {
 
     # We have a libc++ directly, we have one via "smuggled" GCC, or we have one
     # bundled with the C compiler because it is GCC
-    + optionalString (libcxx != null || cc.gcc.langCC or false || (isGNU && cc.langCC or false)) ''
+    + optionalString (libcxx != null || (useGccForLibs && gccForLibs.langCC or false) || (isGNU && cc.langCC or false)) ''
       touch "$out/nix-support/libcxx-cxxflags"
       touch "$out/nix-support/libcxx-ldflags"
-    '' + optionalString (libcxx == null && cc ? gcc) ''
-      for dir in ${cc.gcc}/include/c++/*; do
+    ''
+    + optionalString (libcxx == null && (useGccForLibs && gccForLibs.langCC or false)) ''
+      for dir in ${gccForLibs}/include/c++/*; do
         echo "-isystem $dir" >> $out/nix-support/libcxx-cxxflags
       done
-      for dir in ${cc.gcc}/include/c++/*/${targetPlatform.config}; do
+      for dir in ${gccForLibs}/include/c++/*/${targetPlatform.config}; do
         echo "-isystem $dir" >> $out/nix-support/libcxx-cxxflags
       done
     ''
@@ -420,7 +442,7 @@ stdenv.mkDerivation {
     '' + optionalString targetPlatform.isNetBSD ''
       hardening_unsupported_flags+=" stackprotector fortify"
     '' + optionalString cc.langAda or false ''
-      hardening_unsupported_flags+=" stackprotector strictoverflow"
+      hardening_unsupported_flags+=" format stackprotector strictoverflow"
     '' + optionalString cc.langD or false ''
       hardening_unsupported_flags+=" format"
     '' + optionalString targetPlatform.isWasm ''
@@ -429,7 +451,7 @@ stdenv.mkDerivation {
 
     + optionalString (libc != null && targetPlatform.isAvr) ''
       for isa in avr5 avr3 avr4 avr6 avr25 avr31 avr35 avr51 avrxmega2 avrxmega4 avrxmega5 avrxmega6 avrxmega7 tiny-stack; do
-        echo "-B${getLib libc}/avr/lib/$isa" >> $out/nix-support/libc-cflags
+        echo "-B${getLib libc}/avr/lib/$isa" >> $out/nix-support/libc-crt1-cflags
       done
     ''
 

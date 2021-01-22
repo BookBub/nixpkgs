@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , cmake
 , rocm-cmake
@@ -10,31 +10,33 @@
 , libelf
 , libglvnd
 , libX11
+, numactl
 }:
 
 stdenv.mkDerivation rec {
   pname = "rocclr";
-  version = "3.5.0";
+  version = "4.0.0";
 
   src = fetchFromGitHub {
     owner = "ROCm-Developer-Tools";
     repo = "ROCclr";
-    rev = "roc-${version}";
-    sha256 = "0j70lxpwrdrb1v4lbcyzk7kilw62ip4py9fj149d8k3x5x6wkji1";
+    rev = "rocm-${version}";
+    hash = "sha256-B27ff1b9JRhxFUsBt7CGuYaR87hvKbVSCERWD45d8tM=";
   };
 
   nativeBuildInputs = [ cmake rocm-cmake ];
 
-  buildInputs = [ clang rocm-comgr rocm-runtime rocm-thunk clang ];
+  buildInputs = [ clang rocm-comgr rocm-runtime rocm-thunk ];
 
-  propagatedBuildInputs = [ libelf libglvnd libX11 ];
+  propagatedBuildInputs = [ libelf libglvnd libX11 numactl ];
 
   prePatch = ''
     substituteInPlace CMakeLists.txt \
       --replace 'set(ROCCLR_EXPORTS_FILE "''${CMAKE_CURRENT_BINARY_DIR}/amdrocclr_staticTargets.cmake")' \
         'set(ROCCLR_EXPORTS_FILE "''${CMAKE_INSTALL_LIBDIR}/cmake/amdrocclr_staticTargets.cmake")' \
       --replace 'set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ''${CMAKE_CURRENT_BINARY_DIR}/lib)' \
-        'set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ''${CMAKE_INSTALL_LIBDIR})'
+        'set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ''${CMAKE_INSTALL_LIBDIR})' \
+      --replace 'find_library( OpenCL REQUIRED' 'find_library( OpenCL'
     substituteInPlace device/comgrctx.cpp \
       --replace "libamd_comgr.so" "${rocm-comgr}/lib/libamd_comgr.so"
   '';
@@ -44,13 +46,15 @@ stdenv.mkDerivation rec {
   ];
 
   preFixup = ''
-    mv $out/include/include/* $out/include
-    ln -s $out/include/compiler/lib/include/* $out/include/include
+    # Work around broken cmake files
     ln -s $out/include/compiler/lib/include/* $out/include
-    sed "s|^\([[:space:]]*IMPORTED_LOCATION_RELEASE \).*|\1 \"$out/lib/libamdrocclr_static.a\"|" -i $out/lib/cmake/amdrocclr_staticTargets.cmake
+    ln -s $out/include/elf/elfio $out/include/elfio
+
+    substituteInPlace $out/lib/cmake/rocclr/ROCclrConfig.cmake \
+      --replace "/build/source/build" "$out"
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Radeon Open Compute common language runtime";
     homepage = "https://github.com/ROCm-Developer-Tools/ROCclr";
     license = licenses.mit;

@@ -1,14 +1,14 @@
-{ stdenv, perlPackages, fetchFromGitHub, shortenPerlShebang }:
+{ lib, stdenv, perlPackages, fetchFromGitHub, shortenPerlShebang }:
 
 perlPackages.buildPerlPackage rec {
   pname = "pgformatter";
-  version = "4.3";
+  version = "4.4";
 
   src = fetchFromGitHub {
     owner = "darold";
     repo = "pgFormatter";
     rev = "v${version}";
-    sha256 = "0n8ydj01nmnkd8glzjb0yrsyax1pmdfvaxb5xj4pkb2mf6zm94qy";
+    sha256 = "1sqjw6q005lws7qhkd26jqyb1xqmpcklzw5hk8paxxi8mzyjn0jp";
   };
 
   outputs = [ "out" ];
@@ -31,7 +31,7 @@ perlPackages.buildPerlPackage rec {
 
   doCheck = false;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A PostgreSQL SQL syntax beautifier that can work as a console program or as a CGI";
     homepage = "https://github.com/darold/pgFormatter";
     changelog = "https://github.com/darold/pgFormatter/releases/tag/v${version}";

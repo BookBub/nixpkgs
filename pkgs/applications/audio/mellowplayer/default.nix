@@ -3,7 +3,7 @@
 , lib
 , libnotify
 , mkDerivation
-, pkgconfig
+, pkg-config
 , qtbase
 , qtdeclarative
 , qtgraphicaleffects
@@ -14,16 +14,16 @@
 
 mkDerivation rec {
   pname = "MellowPlayer";
-  version = "3.6.4";
+  version = "3.6.8";
 
   src = fetchFromGitLab {
     owner = "ColinDuquesnoy";
     repo = "MellowPlayer";
     rev = version;
-    sha256 = "1ss7s3kal4vzhz7ld0yy2kvp1rk2w3i6fya0z3xd7nff9p31gqvw";
+    sha256 = "sha256-rsF2xQet7U8d4oGU/HgghvE3vvmkxjlGXPBlLD9mWTk=";
   };
 
-  nativeBuildInputs = [ cmake pkgconfig ];
+  nativeBuildInputs = [ cmake pkg-config ];
 
   buildInputs = [
     libnotify
@@ -62,7 +62,7 @@ mkDerivation rec {
   meta = with lib; {
     inherit (qtbase.meta) platforms;
 
-    description = "Cloud music integration for your desktop.";
+    description = "Cloud music integration for your desktop";
     homepage = "https://gitlab.com/ColinDuquesnoy/MellowPlayer";
     license = licenses.gpl2;
     maintainers = with maintainers; [ kalbasit ];

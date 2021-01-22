@@ -1,8 +1,8 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , meson
 , ninja
-, pkgconfig
+, pkg-config
 , desktop-file-utils
 , python3
 , vala
@@ -21,20 +21,20 @@
 
 stdenv.mkDerivation rec {
   pname = "elementary-planner";
-  version = "2.4.5";
+  version = "2.5.7";
 
   src = fetchFromGitHub {
     owner = "alainm23";
     repo = "planner";
     rev = version;
-    sha256 = "0jj901b2v4vfgv0i7d02xhhylfh6rcanaybk52i7ci92ff2gzgcb";
+    sha256 = "0s2f9q7i31c2splflfnaiqviwnxbsp2zvibr70xafhbhnkmzlrsk";
   };
 
   nativeBuildInputs = [
     desktop-file-utils
     meson
     ninja
-    pkgconfig
+    pkg-config
     python3
     vala
     wrapGAppsHook
@@ -66,7 +66,7 @@ stdenv.mkDerivation rec {
     )
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Task manager with Todoist support designed for GNU/Linux 🚀️";
     homepage = "https://planner-todo.web.app";
     license = licenses.gpl3;

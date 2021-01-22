@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub, rustPlatform, coreutils }:
+{ lib, stdenv, fetchFromGitHub, rustPlatform, coreutils }:
 
 rustPlatform.buildRustPackage rec {
   pname = "heatseeker";
@@ -17,14 +17,14 @@ rustPlatform.buildRustPackage rec {
   # I've suggested using `/usr/bin/env stty`, but doing that isn't quite as simple
   # as a substitution, and this works since we have the path to coreutils stty.
   patchPhase = ''
-    substituteInPlace src/screen/unix.rs --replace "/bin/stty" "${coreutils}/bin/stty" 
+    substituteInPlace src/screen/unix.rs --replace "/bin/stty" "${coreutils}/bin/stty"
   '';
 
   # some tests require a tty, this variable turns them off for Travis CI,
   # which we can also make use of
   TRAVIS = "true";
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A general-purpose fuzzy selector";
     homepage = "https://github.com/rschmitt/heatseeker";
     license = licenses.mit;

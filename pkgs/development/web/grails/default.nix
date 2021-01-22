@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, unzip
+{ lib, stdenv, fetchurl, unzip
 # If jdk is null, require JAVA_HOME in runtime environment, else store
 # JAVA_HOME=${jdk.home} into grails.
 , jdk ? null
@@ -11,11 +11,11 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "grails";
-  version = "4.0.3";
+  version = "4.1.0.M1";
 
   src = fetchurl {
     url = "https://github.com/grails/grails-core/releases/download/v${version}/grails-${version}.zip";
-    sha256 = "107dvgwv2ldpdr99q1nvb1i93jj635p1n7md6q14v9m4a6a226sa";
+    sha256 = "0l99x3g485qjpdd7ga553xpi1s6rq21p8v16qjzqwdhyld961qsr";
   };
 
   buildInputs = [ unzip ];
@@ -36,7 +36,7 @@ stdenv.mkDerivation rec {
 
   preferLocalBuild = true;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Full stack, web application framework for the JVM";
     longDescription = ''
       Grails is an Open Source, full stack, web application framework for the

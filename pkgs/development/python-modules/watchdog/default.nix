@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , buildPythonPackage
 , fetchPypi
 , argh
@@ -9,11 +9,11 @@
 
 buildPythonPackage rec {
   pname = "watchdog";
-  version = "0.10.2";
+  version = "0.10.4";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "0ss58k33l5vah894lykid6ar6kw7z1f29cl4hzr5xvgs8fvfyq65";
+    sha256 = "e38bffc89b15bafe2a131f0e1c74924cf07dcec020c2e0a26cccd208831fcd43";
   };
 
   buildInputs = stdenv.lib.optionals stdenv.isDarwin
@@ -22,7 +22,7 @@ buildPythonPackage rec {
 
   doCheck = false;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Python API and shell utilities to monitor file system events";
     homepage = "https://github.com/gorakhargosh/watchdog";
     license = licenses.asl20;

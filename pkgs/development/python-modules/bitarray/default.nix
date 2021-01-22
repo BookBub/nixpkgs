@@ -2,11 +2,11 @@
 
 buildPythonPackage rec {
   pname = "bitarray";
-  version = "1.3.0";
+  version = "1.6.3";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1pz3yd9rhz3cb0yf7dbjhd1awm0w7vsbj73k4v95484j2kdxk3d4";
+    sha256 = "ae27ce4bef4f35b4cc2c0b0d9cf02ed49eee567c23d70cb5066ad215f9b62b3c";
   };
 
   meta = with lib; {

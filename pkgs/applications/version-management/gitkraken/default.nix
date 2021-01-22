@@ -1,23 +1,23 @@
-{ stdenv, libXcomposite, libgnome-keyring, makeWrapper, udev, curl, alsaLib
+{ lib, stdenv, libXcomposite, libgnome-keyring, makeWrapper, udev, curl, alsaLib
 , libXfixes, atk, gtk3, libXrender, pango, gnome3, cairo, freetype, fontconfig
 , libX11, libXi, libxcb, libXext, libXcursor, glib, libXScrnSaver, libxkbfile, libXtst
 , nss, nspr, cups, fetchzip, expat, gdk-pixbuf, libXdamage, libXrandr, dbus
 , makeDesktopItem, openssl, wrapGAppsHook, at-spi2-atk, at-spi2-core, libuuid
-, e2fsprogs, krb5
+, e2fsprogs, krb5, libdrm, mesa
 }:
 
-with stdenv.lib;
+with lib;
 
 let
   curlWithGnuTls = curl.override { gnutlsSupport = true; sslSupport = false; };
 in
 stdenv.mkDerivation rec {
   pname = "gitkraken";
-  version = "7.1.0";
+  version = "7.4.1";
 
   src = fetchzip {
     url = "https://release.axocdn.com/linux/GitKraken-v${version}.tar.gz";
-    sha256 = "1g7i7sq705x5jkp76z4car9na3qvklpi3a766yiv4h79kc5via48";
+    sha256 = "1c9cyxx5sqvnilf6xp3ildq3lwl6mj8v1vl0wzyjpaiqky99lj9p";
   };
 
   dontBuild = true;
@@ -61,6 +61,8 @@ stdenv.mkDerivation rec {
     libuuid
     e2fsprogs
     krb5
+    libdrm
+    mesa
   ];
 
   desktopItem = makeDesktopItem {

@@ -1,8 +1,8 @@
-{ stdenv, buildGoPackage, fetchFromGitHub }:
+{ lib, stdenv, buildGoPackage, fetchFromGitHub }:
 
 buildGoPackage rec {
   pname = "tut";
-  version = "0.0.13";
+  version = "0.0.14";
 
   goPackagePath = "github.com/RasmusLindroth/tut";
   goDeps = ./deps.nix;
@@ -11,10 +11,10 @@ buildGoPackage rec {
     owner = "RasmusLindroth";
     repo = pname;
     rev = version;
-    sha256 = "085qiv9q2hzv1v6qmbddra23acsmmkbwmjqc3cp81gfgl893z7sm";
+    sha256 = "1l7lc6cjx97v9zhc0b6lfzqjmyv1i3qj83drkck36if3mc60vvwi";
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A TUI for Mastodon with vim inspired keys";
     homepage = "https://github.com/RasmusLindroth/tut";
     license = licenses.mit;

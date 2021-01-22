@@ -1,21 +1,28 @@
-{ lib, buildGoModule, fetchFromGitHub }:
+{ lib, buildGoModule, fetchFromGitHub, installShellFiles, scdoc }:
 
 buildGoModule rec {
   pname = "shfmt";
-  version = "3.1.2";
+  version = "3.2.1";
 
   src = fetchFromGitHub {
     owner = "mvdan";
     repo = "sh";
     rev = "v${version}";
-    sha256 = "03zgi0rlra3gz8cbqwmhpjxsg5048anfc6ccd2w50fjhx6farsnv";
+    sha256 = "1kp4ib0a64cc9qylny48ff5q9ciklzx93yhv7fgqhl1v2c7fm1jp";
   };
 
-  vendorSha256 = "1jq2x4yxshsy4ahp7nrry8dc9cyjj46mljs447rq57sgix4ndpq8";
+  vendorSha256 = "1ma7nvyn6ylbi8bd7x900i94pzs877kfy9xh0nf1bbify1vcpd29";
 
   subPackages = [ "cmd/shfmt" ];
 
   buildFlagsArray = [ "-ldflags=-s -w -X main.version=${version}" ];
+
+  nativeBuildInputs = [ installShellFiles scdoc ];
+
+  postBuild = ''
+    scdoc < cmd/shfmt/shfmt.1.scd > shfmt.1
+    installManPage shfmt.1
+  '';
 
   meta = with lib; {
     homepage = "https://github.com/mvdan/sh";

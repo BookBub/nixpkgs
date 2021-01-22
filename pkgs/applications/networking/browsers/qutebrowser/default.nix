@@ -1,32 +1,42 @@
-{ stdenv, lib, fetchurl, fetchzip, python3Packages
+{ stdenv, lib, fetchurl, fetchzip, python3
 , mkDerivationWith, wrapQtAppsHook, wrapGAppsHook, qtbase, glib-networking
 , asciidoc, docbook_xml_dtd_45, docbook_xsl, libxml2
 , libxslt, gst_all_1 ? null
-, withPdfReader        ? true
-, withMediaPlayback    ? true
+, withPdfReader      ? true
+, withMediaPlayback  ? true
+, backend            ? "webengine"
 }:
 
 assert withMediaPlayback -> gst_all_1 != null;
 
 let
+  python3Packages = python3.pkgs;
   pdfjs = let
-    version = "2.3.200";
+    version = "2.6.347";
   in
   fetchzip rec {
     name = "pdfjs-${version}";
     url = "https://github.com/mozilla/pdf.js/releases/download/v${version}/${name}-dist.zip";
-    sha256 = "1fpxsw0hzahccyng08acvc7g0gk29j2x701p6w6fg1718mvcrm1q";
+    sha256 = "0d016fyg81cq464li01xlkf9rxrb3rpsvmk5gh9m4d5yzmcakkfm";
     stripRoot = false;
   };
 
+  backendPackage =
+   if backend == "webengine" then python3Packages.pyqtwebengine else
+   if backend == "webkit"    then python3Packages.pyqt5_with_qtwebkit else
+   throw ''
+     Unknown qutebrowser backend "${backend}".
+     Valid choices are qtwebengine (recommended) or qtwebkit.
+   '';
+
 in mkDerivationWith python3Packages.buildPythonApplication rec {
   pname = "qutebrowser";
-  version = "1.13.0";
+  version = "1.14.1";
 
   # the release tarballs are different from the git checkout!
   src = fetchurl {
     url = "https://github.com/qutebrowser/qutebrowser/releases/download/v${version}/${pname}-${version}.tar.gz";
-    sha256 = "1xq0a0mcssc1ss4fvhhwr75dhlh3nr9w46i2gmqczzh5cynk1sfk";
+    sha256 = "15l7jphy1qjsh6y6kd5mgkxsl6ymm9564g1yypa946jbyrgi8k2m";
   };
 
   # Needs tox
@@ -46,16 +56,14 @@ in mkDerivationWith python3Packages.buildPythonApplication rec {
   ];
 
   propagatedBuildInputs = with python3Packages; [
-    pyyaml pyqt5 pyqtwebengine jinja2 pygments
+    pyyaml backendPackage jinja2 pygments
     pypeg2 cssutils pyopengl attrs setuptools
     # scripts and userscripts libs
     tldextract beautifulsoup4
     pyreadability pykeepass stem
   ];
 
-  patches = [
-    ./fix-restart.patch
-  ];
+  patches = [ ./fix-restart.patch ];
 
   dontWrapGApps = true;
   dontWrapQtApps = true;
@@ -101,10 +109,11 @@ in mkDerivationWith python3Packages.buildPythonApplication rec {
   postFixup = ''
     wrapProgram $out/bin/qutebrowser \
       "''${gappsWrapperArgs[@]}" \
-      "''${qtWrapperArgs[@]}"
+      "''${qtWrapperArgs[@]}" \
+      --add-flags '--backend ${backend}'
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage    = "https://github.com/The-Compiler/qutebrowser";
     description = "Keyboard-focused browser with a minimal GUI";
     license     = licenses.gpl3Plus;

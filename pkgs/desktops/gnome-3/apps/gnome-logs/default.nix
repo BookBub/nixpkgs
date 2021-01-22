@@ -1,8 +1,9 @@
-{ stdenv
+{ lib, stdenv
 , fetchurl
+, fetchpatch
 , meson
 , ninja
-, pkgconfig
+, pkg-config
 , gnome3
 , glib
 , gtk3
@@ -23,15 +24,23 @@ stdenv.mkDerivation rec {
   version = "3.36.0";
 
   src = fetchurl {
-    url = "mirror://gnome/sources/gnome-logs/${stdenv.lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
+    url = "mirror://gnome/sources/gnome-logs/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
     sha256 = "0w1nfdxbv3f0wnhmdy21ydvr4swfc108hypda561p7l9lrhnnxj4";
   };
+
+  patches = [
+    # https://gitlab.gnome.org/GNOME/gnome-logs/-/issues/52
+    (fetchpatch {
+      url = "https://gitlab.gnome.org/GNOME/gnome-logs/-/commit/b42defceefc775220b525f665a3b662ab9593b81.patch";
+      sha256 = "1s0zscmhwy7r0xff17wh8ik8x9xw1vrkipw5vl5i770bxnljps8n";
+    })
+  ];
 
   nativeBuildInputs = [
     python3
     meson
     ninja
-    pkgconfig
+    pkg-config
     wrapGAppsHook
     gettext
     itstool
@@ -67,7 +76,7 @@ stdenv.mkDerivation rec {
     };
   };
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://wiki.gnome.org/Apps/Logs";
     description = "A log viewer for the systemd journal";
     maintainers = teams.gnome.members;

@@ -59,8 +59,15 @@ let
     endif
     DYNAMIC_GHC_PROGRAMS = ${if enableShared then "YES" else "NO"}
     INTEGER_LIBRARY = ${if enableIntegerSimple then "integer-simple" else "integer-gmp"}
-  '' + stdenv.lib.optionalString (targetPlatform != hostPlatform) ''
-    Stage1Only = ${if targetPlatform.system == hostPlatform.system then "NO" else "YES"}
+  ''
+    # We only need to build stage1 on most cross-compilation because
+    # we will be running the compiler on the native system. In some
+    # situations, like native Musl compilation, we need the compiler
+    # to actually link to our new Libc. The iOS simulator is a special
+    # exception because we can’t actually run simulators binaries
+    # ourselves.
+  + stdenv.lib.optionalString (targetPlatform != hostPlatform) ''
+    Stage1Only = ${if (targetPlatform.system == hostPlatform.system && !targetPlatform.isiOS) then "NO" else "YES"}
     CrossCompilePrefix = ${targetPrefix}
     HADDOCK_DOCS = NO
     BUILD_SPHINX_HTML = NO
@@ -103,10 +110,10 @@ stdenv.mkDerivation (rec {
   outputs = [ "out" "doc" ];
 
   patches = [
-    (fetchpatch rec { # https://phabricator.haskell.org/D5123
-     url = "http://tarballs.nixos.org/sha256/${sha256}";
+    (fetchpatch { # https://phabricator.haskell.org/D5123
+     url = "https://gitlab.haskell.org/ghc/ghc/-/commit/13ff0b7ced097286e0d7b054f050871effe07f86.diff";
      name = "D5123.diff";
-     sha256 = "0nhqwdamf2y4gbwqxcgjxs0kqx23w9gv5kj0zv6450dq19rji82n";
+     sha256 = "140lmnqxra7xkwy370c5pyf8dgdwgmbpcrs1dapnwr2dh8bavn8c";
     })
     (fetchpatch { # https://github.com/haskell/haddock/issues/900
      url = "https://patch-diff.githubusercontent.com/raw/haskell/haddock/pull/983.diff";
@@ -249,6 +256,7 @@ stdenv.mkDerivation (rec {
     homepage = "http://haskell.org/ghc";
     description = "The Glasgow Haskell Compiler";
     maintainers = with stdenv.lib.maintainers; [ marcweber andres peti ];
+    timeout = 24 * 3600;
     inherit (ghc.meta) license platforms;
   };
 

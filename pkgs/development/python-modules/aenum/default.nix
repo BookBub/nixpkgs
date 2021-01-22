@@ -2,11 +2,11 @@
 
 buildPythonPackage rec {
   pname = "aenum";
-  version = "2.2.3";
+  version = "2.2.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "a4334cabf47c167d44ab5a6198837b80deec5d5bad1b5cf70c966c3a330260e8";
+    sha256 = "260225470b49429f5893a195a8b99c73a8d182be42bf90c37c93e7b20e44eaae";
   };
 
   # For Python 3, locale has to be set to en_US.UTF-8 for
@@ -22,11 +22,10 @@ buildPythonPackage rec {
   runHook postCheck
   '';
 
-
   meta = {
     description = "Advanced Enumerations (compatible with Python's stdlib Enum), NamedTuples, and NamedConstants";
     maintainers = with stdenv.lib.maintainers; [ vrthra ];
     license = with stdenv.lib.licenses; [ bsd3 ];
-    homepage = "https://bitbucket.org/stoneleaf/aenum";
+    homepage = "https://github.com/ethanfurman/aenum";
   };
 }

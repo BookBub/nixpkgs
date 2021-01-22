@@ -33,9 +33,9 @@ stdenv.mkDerivation {
   '';
   meta = {
     inherit (s) version;
-    description = ''Standard software-system definition library for Common Lisp'';
+    description = "Standard software-system definition library for Common Lisp";
     license = stdenv.lib.licenses.mit ;
     maintainers = [stdenv.lib.maintainers.raskin];
-    platforms = stdenv.lib.platforms.linux;
+    platforms = stdenv.lib.platforms.unix;
   };
 }

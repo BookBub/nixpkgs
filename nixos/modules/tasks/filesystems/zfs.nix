@@ -175,13 +175,9 @@ in
 
       forceImportAll = mkOption {
         type = types.bool;
-        default = true;
+        default = false;
         description = ''
           Forcibly import all ZFS pool(s).
-
-          This is enabled by default for backwards compatibility purposes, but it is highly
-          recommended to disable this option, as it bypasses some of the safeguards ZFS uses
-          to protect your ZFS pools.
 
           If you set this option to <literal>false</literal> and NixOS subsequently fails to
           import your non-root ZFS pool(s), you should manually import each pool with
@@ -191,13 +187,14 @@ in
       };
 
       requestEncryptionCredentials = mkOption {
-        type = types.bool;
+        type = types.either types.bool (types.listOf types.str);
         default = true;
+        example = [ "tank" "data" ];
         description = ''
-          Request encryption keys or passwords for all encrypted datasets on import.
-          For root pools the encryption key can be supplied via both an
-          interactive prompt (keylocation=prompt) and from a file
-          (keylocation=file://).
+          If true on import encryption keys or passwords for all encrypted datasets
+          are requested. To only decrypt selected datasets supply a list of dataset
+          names instead. For root pools the encryption key can be supplied via both
+          an interactive prompt (keylocation=prompt) and from a file (keylocation=file://).
         '';
       };
 
@@ -419,9 +416,13 @@ in
               fi
               poolImported "${pool}" || poolImport "${pool}"  # Try one last time, e.g. to import a degraded pool.
             fi
-            ${lib.optionalString cfgZfs.requestEncryptionCredentials ''
-              zfs load-key -a
-            ''}
+            ${if isBool cfgZfs.requestEncryptionCredentials
+              then optionalString cfgZfs.requestEncryptionCredentials ''
+                zfs load-key -a
+              ''
+              else concatMapStrings (fs: ''
+                zfs load-key ${fs}
+              '') cfgZfs.requestEncryptionCredentials}
         '') rootPools));
       };
 
@@ -439,7 +440,7 @@ in
           pkgs.gnugrep
           pkgs.gnused
           pkgs.nettools
-          pkgs.utillinux
+          pkgs.util-linux
         ];
       };
 
@@ -502,6 +503,7 @@ in
               Type = "oneshot";
               RemainAfterExit = true;
             };
+            environment.ZFS_FORCE = optionalString cfgZfs.forceImportAll "-f";
             script = (importLib {
               # See comments at importLib definition.
               zpoolCmd="${packages.zfsUser}/sbin/zpool";
@@ -517,9 +519,16 @@ in
               done
               poolImported "${pool}" || poolImport "${pool}"  # Try one last time, e.g. to import a degraded pool.
               if poolImported "${pool}"; then
-                ${optionalString cfgZfs.requestEncryptionCredentials ''
+                ${optionalString (if isBool cfgZfs.requestEncryptionCredentials
+                                  then cfgZfs.requestEncryptionCredentials
+                                  else cfgZfs.requestEncryptionCredentials != []) ''
                   ${packages.zfsUser}/sbin/zfs list -rHo name,keylocation ${pool} | while IFS=$'\t' read ds kl; do
-                    (case "$kl" in
+                    (${optionalString (!isBool cfgZfs.requestEncryptionCredentials) ''
+                         if ! echo '${concatStringsSep "\n" cfgZfs.requestEncryptionCredentials}' | grep -qFx "$ds"; then
+                           continue
+                         fi
+                       ''}
+                    case "$kl" in
                       none )
                         ;;
                       prompt )
@@ -655,6 +664,8 @@ in
         # - There are only HDDs and we would set the system in a degraded state
         serviceConfig.ExecStart = ''${pkgs.runtimeShell} -c 'for pool in $(zpool list -H -o name); do zpool trim $pool;  done || true' '';
       };
+
+      systemd.timers.zpool-trim.timerConfig.Persistent = "yes";
     })
   ];
 }

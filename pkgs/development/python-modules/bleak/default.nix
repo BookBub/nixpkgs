@@ -1,14 +1,14 @@
-{ stdenv, buildPythonPackage, isPy3k, fetchPypi, bluez, txdbus, pytest, pytestcov }:
+{ lib, stdenv, buildPythonPackage, isPy3k, fetchPypi, bluez, txdbus, pytest, pytestcov }:
 
 buildPythonPackage rec {
   pname = "bleak";
-  version = "0.6.4";
+  version = "0.10.0";
 
   disabled = !isPy3k;
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1dc32899d0700c5b5ed9abf642dfee28ac62b1fb5d7be5fa5a6db104dec9a03c";
+    sha256 = "5c3a873965f2910865895e572e7a4f10533d6e150e6ba17936397426bf8d1eee";
   };
 
   postPatch = ''
@@ -24,11 +24,11 @@ buildPythonPackage rec {
 
   checkPhase = "AGENT_OS=linux py.test";
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Bluetooth Low Energy platform Agnostic Klient for Python";
     homepage = "https://github.com/hbldh/bleak";
     license = licenses.mit;
     platforms = platforms.linux;
-    maintainers = with maintainers; [ geistesk ];
+    maintainers = with maintainers; [ oxzi ];
   };
 }

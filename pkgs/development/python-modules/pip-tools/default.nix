@@ -1,13 +1,13 @@
-{ stdenv, fetchPypi, buildPythonPackage, pip, pytest, click, six
+{ lib, stdenv, fetchPypi, buildPythonPackage, pip, pytest, click, six
 , setuptools_scm, git, glibcLocales, mock }:
 
 buildPythonPackage rec {
   pname = "pip-tools";
-  version = "5.2.0";
+  version = "5.4.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "be6190405e4206526607aa4813bd6d7a949e4fdc180d0db4f3221f3778846cf7";
+    sha256 = "a4d3990df2d65961af8b41dacc242e600fdc8a65a2e155ed3d2fc18a5c209f20";
   };
 
   LC_ALL = "en_US.UTF-8";
@@ -42,7 +42,7 @@ buildPythonPackage rec {
     py.test -k "${disabledTests}"
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Keeps your pinned dependencies fresh";
     homepage = "https://github.com/jazzband/pip-tools/";
     license = licenses.bsd3;

@@ -1,17 +1,17 @@
-{ stdenv, fetchurl, makeWrapper
+{ lib, stdenv, fetchurl, makeWrapper
 , xorg, imlib2, libjpeg, libpng
 , curl, libexif, jpegexiforient, perlPackages
-, enableAutoreload ? true }:
+, enableAutoreload ? !stdenv.hostPlatform.isDarwin }:
 
-with stdenv.lib;
+with lib;
 
 stdenv.mkDerivation rec {
   pname = "feh";
-  version = "3.4.1";
+  version = "3.6.1";
 
   src = fetchurl {
     url = "https://feh.finalrewind.org/${pname}-${version}.tar.bz2";
-    sha256 = "0yvvj1s7ayn0lwils582smwkmckdk0gij5c58g45n4xh981n693q";
+    sha256 = "1a0ygdpyvpcsr0hdi9ai7ycbkgvacq8dpd8cacbppsds5k2xw7lv";
   };
 
   outputs = [ "out" "man" "doc" ];

@@ -2,13 +2,13 @@
 
 stdenv.mkDerivation rec {
   pname = "nix-direnv";
-  version = "1.0.0";
+  version = "1.2";
 
   src = fetchFromGitHub {
     owner = "nix-community";
     repo = "nix-direnv";
-    rev = "${version}";
-    sha256 = "1lwmg6mn3lf7s0345v53zadxn9v0x8z6pcbj90v5dx3pgrq41gs8";
+    rev = version;
+    sha256 = "sha256-/mlM1EeUlr1nTUJ5rB41idzk3Mfy/htjjPUARYDFpb0=";
   };
 
   # Substitute instead of wrapping because the resulting file is
@@ -26,7 +26,7 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A fast, persistent use_nix implementation for direnv";
     homepage    = "https://github.com/nix-community/nix-direnv";
     license     = licenses.mit;

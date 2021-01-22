@@ -1,13 +1,15 @@
-{ stdenv, fetchFromGitHub, fetchpatch, cmake, zlib, c-ares, pkgconfig, openssl, protobuf, gflags, abseil-cpp }:
+{ lib, stdenv, fetchFromGitHub, fetchpatch, cmake, zlib, c-ares, pkg-config, openssl, protobuf
+, gflags, abseil-cpp, libnsl
+}:
 
 stdenv.mkDerivation rec {
-  version = "1.29.0"; # N.B: if you change this, change pythonPackages.grpcio-tools to a matching version too
+  version = "1.34.1"; # N.B: if you change this, change pythonPackages.grpcio-tools to a matching version too
   pname = "grpc";
   src = fetchFromGitHub {
     owner = "grpc";
     repo = "grpc";
     rev = "v${version}";
-    sha256 = "1n604grkf2amzrmwcz6am0rpbp3yfb062lpgmhv943hj8wk7xw27";
+    sha256 = "0p6si9i0gg885ag2x87a7jyzhgd5lhx2bh2vjj2ra1jn6y3vg6qk";
     fetchSubmodules = true;
   };
   patches = [
@@ -18,8 +20,9 @@ stdenv.mkDerivation rec {
     })
   ];
 
-  nativeBuildInputs = [ cmake pkgconfig ];
-  buildInputs = [ zlib c-ares c-ares.cmake-config openssl protobuf gflags abseil-cpp ];
+  nativeBuildInputs = [ cmake pkg-config ];
+  buildInputs = [ zlib c-ares c-ares.cmake-config openssl protobuf gflags abseil-cpp ]
+    ++ lib.optionals stdenv.isLinux [ libnsl ];
 
   cmakeFlags =
     [ "-DgRPC_ZLIB_PROVIDER=package"
@@ -42,11 +45,11 @@ stdenv.mkDerivation rec {
     export LD_LIBRARY_PATH=$(pwd)''${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH
   '';
 
-  NIX_CFLAGS_COMPILE = stdenv.lib.optionalString stdenv.cc.isClang "-Wno-error=unknown-warning-option";
+  NIX_CFLAGS_COMPILE = lib.optionalString stdenv.cc.isClang "-Wno-error=unknown-warning-option";
 
   enableParallelBuilds = true;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "The C based gRPC (C++, Python, Ruby, Objective-C, PHP, C#)";
     license = licenses.asl20;
     maintainers = [ maintainers.lnl7 maintainers.marsam ];

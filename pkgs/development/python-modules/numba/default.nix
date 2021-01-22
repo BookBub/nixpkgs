@@ -13,14 +13,14 @@
 }:
 
 buildPythonPackage rec {
-  version = "0.50.0";
+  version = "0.51.2";
   pname = "numba";
   # uses f-strings
   disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "c9e5752821530694294db41ee19a4b00e5826c689821907f6c2ece9a02756b29";
+    sha256 = "16bd59572114adbf5f600ea383880d7b2071ae45477e84a24994e089ea390768";
   };
 
   NIX_CFLAGS_COMPILE = stdenv.lib.optionalString stdenv.isDarwin "-I${libcxx}/include/c++/v1";

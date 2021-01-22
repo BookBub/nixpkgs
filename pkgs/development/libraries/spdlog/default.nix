@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub, cmake }:
+{ lib, stdenv, fetchFromGitHub, cmake, fmt }:
 
 let
   generic = { version, sha256 }:
@@ -14,8 +14,15 @@ let
       };
 
       nativeBuildInputs = [ cmake ];
+      buildInputs = [ fmt ];
 
-      cmakeFlags = [ "-DSPDLOG_BUILD_EXAMPLE=OFF" "-DSPDLOG_BUILD_BENCH=OFF" ];
+      cmakeFlags = [
+        "-DSPDLOG_BUILD_SHARED=ON"
+        "-DSPDLOG_BUILD_EXAMPLE=OFF"
+        "-DSPDLOG_BUILD_BENCH=OFF"
+        "-DSPDLOG_BUILD_TESTS=ON"
+        "-DSPDLOG_FMT_EXTERNAL=ON"
+      ];
 
       outputs = [ "out" "doc" ];
 
@@ -24,7 +31,10 @@ let
         cp -rv ../example $out/share/doc/spdlog
       '';
 
-      meta = with stdenv.lib; {
+      doCheck = true;
+      preCheck = "export LD_LIBRARY_PATH=$(pwd):$LD_LIBRARY_PATH";
+
+      meta = with lib; {
         description    = "Very fast, header only, C++ logging library";
         homepage       = "https://github.com/gabime/spdlog";
         license        = licenses.mit;
@@ -35,8 +45,8 @@ let
 in
 {
   spdlog_1 = generic {
-    version = "1.6.0";
-    sha256 = "15fn8nd9xj7wrxcg9n4fjffid790qg2m366rx2lq2fc9v9walrxs";
+    version = "1.8.1";
+    sha256 = "sha256-EyZhYgcdtZC+vsOUKShheY57L0tpXltduHWwaoy6G9k=";
   };
 
   spdlog_0 = generic {

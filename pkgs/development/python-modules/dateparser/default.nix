@@ -18,11 +18,11 @@
 
 buildPythonPackage rec {
   pname = "dateparser";
-  version = "0.7.4";
+  version = "1.0.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "fb5bfde4795fa4b179fe05c2c25b3981f785de26bec37e247dee1079c63d5689";
+    sha256 = "159cc4e01a593706a15cd4e269a0b3345edf3aef8bf9278a57dac8adf5bf1e4a";
   };
 
   checkInputs = [

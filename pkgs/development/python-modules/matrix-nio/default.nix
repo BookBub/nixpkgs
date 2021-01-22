@@ -20,13 +20,13 @@
 
 buildPythonPackage rec {
   pname = "matrix-nio";
-  version = "0.14.1";
+  version = "0.15.2";
 
   src = fetchFromGitHub {
     owner = "poljar";
     repo = "matrix-nio";
     rev = version;
-    sha256 = "0mgb9m3298jvw3wa051zn7vp1m8qriys3ps0qn3sq54fndljgg5k";
+    sha256 = "190xw3cvk4amr9pl8ip2i7k3xdjd0231kn2zl6chny5axx22p1dv";
   };
 
   nativeBuildInputs = [

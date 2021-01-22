@@ -1,4 +1,4 @@
-{ stdenv, buildGoModule, fetchgit, qemu, docker, which, makeWrapper }:
+{ lib, stdenv, buildGoModule, fetchgit, qemu, docker, which, makeWrapper }:
 
 buildGoModule rec {
   pname = "out-of-tree";
@@ -14,12 +14,14 @@ buildGoModule rec {
 
   vendorSha256 = "0kg5c4h7xnwfcfshrh5n76xv98wzr73kxzr8q65iphsjimbxcpy3";
 
+  doCheck = false;
+
   postFixup = ''
     wrapProgram $out/bin/out-of-tree \
       --prefix PATH : "${stdenv.lib.makeBinPath [ qemu docker which ]}"
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "kernel {module, exploit} development tool";
     homepage = "https://out-of-tree.io";
     maintainers = [ maintainers.dump_stack ];

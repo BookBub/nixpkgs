@@ -31,6 +31,12 @@ let
      test '~' = '~' && echo 'success'
     '';
 
+    rust = writeRustBin "test_writers" {} ''
+      fn main(){
+        println!("success")
+      }
+    '';
+
     haskell = writeHaskellBin "test_writers" { libraries = [ haskellPackages.acme-default ]; } ''
       import Data.Default
 
@@ -151,6 +157,14 @@ let
         - test: success
       """)
       print(y[0]['test'])
+    '';
+
+    python2NoLibs = writePython2 "test_python2_no_libs" {} ''
+      print("success")
+    '';
+
+    python3NoLibs = writePython3 "test_python3_no_libs" {} ''
+      print("success")
     '';
   };
 

@@ -5,28 +5,26 @@
 # https://github.com/oneapi-src/oneDNN#oneapi-deep-neural-network-library-onednn
 stdenv.mkDerivation rec {
   pname = "oneDNN";
-  version = "1.5.1";
+  version = "2.0";
 
   src = fetchFromGitHub {
     owner = "oneapi-src";
     repo = "oneDNN";
     rev = "v${version}";
-    sha256 = "1l66gkidldjpznp8pb01wdgrmm0rmrbndv8lzidz8fp9hf473zgl";
+    sha256 = "0r50r9bz7mdhy9z9zdy5m2nhi8r6kqsn70q2rfwylm1vppmhwkfq";
   };
 
   outputs = [ "out" "dev" "doc" ];
 
   nativeBuildInputs = [ cmake ];
 
-  doCheck = true;
+  # Tests fail on some Hydra builders, because they do not support SSE4.2.
+  doCheck = false;
 
   # The test driver doesn't add an RPath to the build libdir
   preCheck = ''
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH''${LD_LIBRARY_PATH:+:}$PWD/src
     export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH''${DYLD_LIBRARY_PATH:+:}$PWD/src
-  '' + lib.optionalString stdenv.isx86_64 ''
-    # Use baseline SIMD in case CPU features get misdetected.
-    export DNNL_MAX_CPU_ISA=SSE41
   '';
 
   # The cmake install gets tripped up and installs a nix tree into $out, in

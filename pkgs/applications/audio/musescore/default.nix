@@ -1,4 +1,4 @@
-{ stdenv, mkDerivation, lib, fetchzip, cmake, pkgconfig
+{ stdenv, mkDerivation, lib, fetchFromGitHub, cmake, pkg-config
 , alsaLib, freetype, libjack2, lame, libogg, libpulseaudio, libsndfile, libvorbis
 , portaudio, portmidi, qtbase, qtdeclarative, qtgraphicaleffects
 , qtquickcontrols2, qtscript, qtsvg, qttools
@@ -7,12 +7,13 @@
 
 mkDerivation rec {
   pname = "musescore";
-  version = "3.4.2";
+  version = "3.6";
 
-  src = fetchzip {
-    url = "https://github.com/musescore/MuseScore/releases/download/v${version}/MuseScore-${version}.zip";
-    sha256 = "1laskvp40dncs12brkgvk7wl0qrvzy52rn7nf3b67ps1vmd130gp";
-    stripRoot = false;
+  src = fetchFromGitHub {
+    owner = "musescore";
+    repo = "MuseScore";
+    rev = "v${version}";
+    sha256 = "sha256-0M+idYnrgXyH6WLp+2jIYRnFzTB93v+dG1XHmSNyPjE=";
   };
 
   patches = [
@@ -20,9 +21,17 @@ mkDerivation rec {
   ];
 
   cmakeFlags = [
-  ] ++ lib.optional (lib.versionAtLeast freetype.version "2.5.2") "-DUSE_SYSTEM_FREETYPE=ON";
+    "-DMUSESCORE_BUILD_CONFIG=release"
+    "-DUSE_SYSTEM_FREETYPE=ON"
+  ];
 
-  nativeBuildInputs = [ cmake pkgconfig ];
+  qtWrapperArgs = [
+    # Work around crash on update from 3.4.2 to 3.5.0
+    # https://bugreports.qt.io/browse/QTBUG-85967
+    "--set QML_DISABLE_DISK_CACHE 1"
+  ];
+
+  nativeBuildInputs = [ cmake pkg-config ];
 
   buildInputs = [
     alsaLib libjack2 freetype lame libogg libpulseaudio libsndfile libvorbis
@@ -31,7 +40,7 @@ mkDerivation rec {
     qtscript qtsvg qttools qtwebengine qtxmlpatterns
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Music notation and composition software";
     homepage = "https://musescore.org/";
     license = licenses.gpl2;

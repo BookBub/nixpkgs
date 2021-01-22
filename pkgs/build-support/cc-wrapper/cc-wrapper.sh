@@ -17,16 +17,6 @@ fi
 
 source @out@/nix-support/utils.bash
 
-# Flirting with a layer violation here.
-if [ -z "${NIX_BINTOOLS_WRAPPER_FLAGS_SET_@suffixSalt@:-}" ]; then
-    source @bintools@/nix-support/add-flags.sh
-fi
-
-# Put this one second so libc ldflags take priority.
-if [ -z "${NIX_CC_WRAPPER_FLAGS_SET_@suffixSalt@:-}" ]; then
-    source @out@/nix-support/add-flags.sh
-fi
-
 
 # Parse command line options and set several variables.
 # For instance, figure out if linker flags should be passed.
@@ -37,6 +27,8 @@ cc1=0
 # shellcheck disable=SC2193
 [[ "@prog@" = *++ ]] && isCpp=1 || isCpp=0
 cppInclude=1
+cInclude=1
+setDynamicLinker=1
 
 expandResponseParams "$@"
 declare -i n=0
@@ -63,9 +55,12 @@ while (( "$n" < "$nParams" )); do
     elif [ "$p" = -nostdlib ]; then
         isCpp=-1
     elif [ "$p" = -nostdinc ]; then
+        cInclude=0
         cppInclude=0
     elif [ "$p" = -nostdinc++ ]; then
         cppInclude=0
+    elif [[ "$p" = -static || "$p" = -static-pie ]]; then
+        setDynamicLinker=0
     elif [[ "$p" != -?* ]]; then
         # A dash alone signifies standard input; it is not a flag
         nonFlagArgs=1
@@ -111,6 +106,15 @@ if [[ "${NIX_ENFORCE_PURITY:-}" = 1 && -n "$NIX_STORE" ]]; then
     params=(${rest+"${rest[@]}"})
 fi
 
+# Flirting with a layer violation here.
+if [ -z "${NIX_BINTOOLS_WRAPPER_FLAGS_SET_@suffixSalt@:-}" ]; then
+    source @bintools@/nix-support/add-flags.sh
+fi
+
+# Put this one second so libc ldflags take priority.
+if [ -z "${NIX_CC_WRAPPER_FLAGS_SET_@suffixSalt@:-}" ]; then
+    source @out@/nix-support/add-flags.sh
+fi
 
 # Clear march/mtune=native -- they bring impurity.
 if [ "$NIX_ENFORCE_NO_NATIVE_@suffixSalt@" = 1 ]; then
@@ -151,6 +155,9 @@ if [ "$dontLink" != 1 ]; then
     for i in $NIX_LDFLAGS_BEFORE_@suffixSalt@; do
         extraBefore+=("-Wl,$i")
     done
+    if [[ "$setDynamicLinker" = 1 && -n "$NIX_DYNAMIC_LINKER_@suffixSalt@" ]]; then
+        extraBefore+=("-Wl,-dynamic-linker=$NIX_DYNAMIC_LINKER_@suffixSalt@")
+    fi
     for i in $NIX_LDFLAGS_@suffixSalt@; do
         if [ "${i:0:3}" = -L/ ]; then
             extraAfter+=("$i")

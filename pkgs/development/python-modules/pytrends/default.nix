@@ -1,6 +1,7 @@
-{ stdenv
+{ lib, stdenv
 , buildPythonPackage
 , fetchPypi
+, isPy27
 , requests
 , lxml
 , pandas
@@ -9,6 +10,7 @@
 buildPythonPackage rec {
   pname = "pytrends";
   version = "4.7.3";
+  disabled = isPy27; # python2 pandas is too old
 
   src = fetchPypi {
     inherit pname version;
@@ -19,7 +21,7 @@ buildPythonPackage rec {
 
   propagatedBuildInputs = [ requests lxml pandas ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Pseudo API for Google Trends";
     homepage = "https://github.com/GeneralMills/pytrends";
     license = [ licenses.asl20 ];

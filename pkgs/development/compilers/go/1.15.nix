@@ -1,7 +1,8 @@
 { stdenv, fetchurl, tzdata, iana-etc, runCommand
-, perl, which, pkgconfig, patch, procps, pcre, cacert, Security, Foundation
+, perl, which, pkg-config, patch, procps, pcre, cacert, Security, Foundation
 , mailcap, runtimeShell
-, buildPackages, pkgsTargetTarget
+, buildPackages
+, pkgsBuildTarget
 , fetchpatch
 }:
 
@@ -25,21 +26,25 @@ let
     "armv5tel" = "arm";
     "armv6l" = "arm";
     "armv7l" = "arm";
+    "powerpc64le" = "ppc64le";
   }.${platform.parsed.cpu.name} or (throw "Unsupported system");
 
+  # We need a target compiler which is still runnable at build time,
+  # to handle the cross-building case where build != host == target
+  targetCC = pkgsBuildTarget.targetPackages.stdenv.cc;
 in
 
 stdenv.mkDerivation rec {
   pname = "go";
-  version = "1.15beta1";
+  version = "1.15.7";
 
   src = fetchurl {
     url = "https://dl.google.com/go/go${version}.src.tar.gz";
-    sha256 = "1h1sg6j9jac5bw2pjrd13bf4nr18prs89147izdhzbhp896sikbq";
+    sha256 = "1g1a39y1cnvw3y0bjwjms55cz0s9icm8myrgxi295jwfznmb6cc6";
   };
 
   # perl is used for testing go vet
-  nativeBuildInputs = [ perl which pkgconfig patch procps ];
+  nativeBuildInputs = [ perl which pkg-config patch procps ];
   buildInputs = [ cacert pcre ]
     ++ optionals stdenv.isLinux [ stdenv.cc.libc.out ]
     ++ optionals (stdenv.hostPlatform.libc == "glibc") [ stdenv.cc.libc.static ];
@@ -169,11 +174,11 @@ stdenv.mkDerivation rec {
   # {CC,CXX}_FOR_TARGET must be only set for cross compilation case as go expect those
   # to be different from CC/CXX
   CC_FOR_TARGET = if (stdenv.buildPlatform != stdenv.targetPlatform) then
-      "${pkgsTargetTarget.stdenv.cc}/bin/${pkgsTargetTarget.stdenv.cc.targetPrefix}cc"
+      "${targetCC}/bin/${targetCC.targetPrefix}cc"
     else
       null;
   CXX_FOR_TARGET = if (stdenv.buildPlatform != stdenv.targetPlatform) then
-      "${pkgsTargetTarget.stdenv.cc}/bin/${pkgsTargetTarget.stdenv.cc.targetPrefix}c++"
+      "${targetCC}/bin/${targetCC.targetPrefix}c++"
     else
       null;
 
@@ -245,7 +250,6 @@ stdenv.mkDerivation rec {
   disallowedReferences = [ goBootstrap ];
 
   meta = with stdenv.lib; {
-    branch = "1.15";
     homepage = "http://golang.org/";
     description = "The Go Programming language";
     license = licenses.bsd3;

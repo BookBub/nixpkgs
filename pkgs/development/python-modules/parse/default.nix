@@ -1,20 +1,20 @@
-{ stdenv, fetchPypi
+{ lib, stdenv, fetchPypi
 , buildPythonPackage, python
 }:
 buildPythonPackage rec {
   pname = "parse";
-  version = "1.15.0";
+  version = "1.18.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "1h4m5df5grjpaf087g8ciishz5ajl28s3140s8bngppvy71f5m56";
+    sha256 = "91666032d6723dc5905248417ef0dc9e4c51df9526aaeef271eacad6491f06a4";
   };
 
   checkPhase = ''
     ${python.interpreter} test_parse.py
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://github.com/r1chardj0n3s/parse";
     description = "parse() is the opposite of format()";
     license = licenses.bsdOriginal;

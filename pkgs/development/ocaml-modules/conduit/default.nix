@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, buildDunePackage
+{ lib, fetchurl, buildDunePackage
 , ppx_sexp_conv, sexplib, astring, uri, logs
 , ipaddr, ipaddr-sexp
 }:
@@ -6,6 +6,7 @@
 buildDunePackage rec {
   pname = "conduit";
   version = "2.2.2";
+  useDune2 = true;
 
   minimumOCamlVersion = "4.07";
 
@@ -18,9 +19,9 @@ buildDunePackage rec {
   propagatedBuildInputs = [ astring ipaddr ipaddr-sexp sexplib uri ];
 
   meta = {
-    description = "Network connection library for TCP and SSL";
-    license = stdenv.lib.licenses.isc;
-    maintainers = with stdenv.lib.maintainers; [ alexfmpe vbgl ];
+    description = "A network connection establishment library";
+    license = lib.licenses.isc;
+    maintainers = with lib.maintainers; [ alexfmpe vbgl ];
     homepage = "https://github.com/mirage/ocaml-conduit";
   };
 }

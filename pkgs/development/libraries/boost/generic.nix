@@ -1,4 +1,5 @@
-{ stdenv, icu, expat, zlib, bzip2, python, fixDarwinDylibNames, libiconv
+{ lib, stdenv, icu, expat, zlib, bzip2, python, fixDarwinDylibNames, libiconv
+, fetchpatch
 , which
 , buildPackages
 , toolset ? /**/ if stdenv.cc.isClang  then "clang"
@@ -7,7 +8,7 @@
 , enableDebug ? false
 , enableSingleThreaded ? false
 , enableMultiThreaded ? true
-, enableShared ? !(stdenv.hostPlatform.libc == "msvcrt") # problems for now
+, enableShared ? !(with stdenv.hostPlatform; isStatic || libc == "msvcrt") # problems for now
 , enableStatic ? !enableShared
 , enablePython ? false
 , enableNumpy ? false
@@ -29,9 +30,9 @@ assert enablePython -> stdenv.hostPlatform == stdenv.buildPlatform;
 assert enableNumpy -> enablePython;
 
 # Boost <1.69 can't be build with clang >8, because pth was removed
-assert with stdenv.lib; ((toolset == "clang" && !(versionOlder stdenv.cc.version "8.0.0")) -> !(versionOlder version "1.69"));
+assert with lib; ((toolset == "clang" && !(versionOlder stdenv.cc.version "8.0.0")) -> !(versionOlder version "1.69"));
 
-with stdenv.lib;
+with lib;
 let
 
   variant = concatStringsSep ","
@@ -113,7 +114,16 @@ stdenv.mkDerivation {
     if version == "1.55.0"
     then ./darwin-1.55-no-system-python.patch
     else ./darwin-no-system-python.patch)
-  ++ optional (versionAtLeast version "1.70") ./cmake-paths.patch;
+  # Fix boost-context segmentation faults on ppc64 due to ABI violation
+  ++ optional (versionAtLeast version "1.61" &&
+               versionOlder version "1.71") (fetchpatch {
+    url = "https://github.com/boostorg/context/commit/2354eca9b776a6739112833f64754108cc0d1dc5.patch";
+    sha256 = "067m4bjpmcanqvg28djax9a10avmdwhlpfx6gn73kbqqq70dnz29";
+    stripLen = 1;
+    extraPrefix = "libs/context/";
+  })
+  ++ optional (and (versionAtLeast version "1.70") (!versionAtLeast version "1.73")) ./cmake-paths.patch
+  ++ optional (versionAtLeast version "1.73") ./cmake-paths-173.patch;
 
   meta = {
     homepage = "http://boost.org/";
@@ -140,16 +150,16 @@ stdenv.mkDerivation {
     EOF
   '';
 
-  NIX_CFLAGS_LINK = stdenv.lib.optionalString stdenv.isDarwin
+  NIX_CFLAGS_LINK = lib.optionalString stdenv.isDarwin
                       "-headerpad_max_install_names";
 
   enableParallelBuilding = true;
 
-  nativeBuildInputs = [ which ];
+  nativeBuildInputs = [ which ]
+    ++ optional stdenv.hostPlatform.isDarwin fixDarwinDylibNames;
   depsBuildBuild = [ buildPackages.stdenv.cc ];
   buildInputs = [ expat zlib bzip2 libiconv ]
     ++ optional (stdenv.hostPlatform == stdenv.buildPlatform) icu
-    ++ optional stdenv.isDarwin fixDarwinDylibNames
     ++ optional enablePython python
     ++ optional enableNumpy python.pkgs.numpy;
 

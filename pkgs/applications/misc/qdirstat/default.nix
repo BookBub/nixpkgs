@@ -1,19 +1,21 @@
-{ stdenv, fetchFromGitHub, qmake
+{ lib, stdenv, fetchFromGitHub, qmake
 , coreutils, xdg_utils, bash
 , makeWrapper, perlPackages, mkDerivation }:
 
 let
-  version = "1.6.1";
-in mkDerivation rec {
   pname = "qdirstat";
-  inherit version;
+  version = "1.7";
 
   src = fetchFromGitHub {
     owner = "shundhammer";
-    repo = "qdirstat";
+    repo = pname;
     rev = version;
-    sha256 = "0q77a347qv1aka6sni6l03zh5jzyy9s74aygg554r73g01kxczpb";
+    sha256 = "163x3fxra0l3vvrzm25mh7jvcwjbmwsqlpppkxx76mkz9a1769fy";
   };
+in
+
+mkDerivation {
+  inherit pname version src;
 
   nativeBuildInputs = [ qmake makeWrapper ];
 
@@ -45,7 +47,7 @@ in mkDerivation rec {
       --set PERL5LIB "${perlPackages.makePerlPath [ perlPackages.URI ]}"
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Graphical disk usage analyzer";
     homepage = src.meta.homepage;
     license = licenses.gpl2;

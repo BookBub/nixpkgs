@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , buildGoModule
 , fetchFromGitHub
 , packr
@@ -23,7 +23,10 @@ buildGoModule rec {
     sha256 = "0da1kav5x2xcmwvdgfk1q70l1k0sqqj3njgx2xx885d40m6qbnrs";
   };
 
-  vendorSha256 = "1qjlvhizl8cy06cgf4phia70bgbm4lj57z5z2gyr8aglx98bnpdn";
+  runVend = true;
+  vendorSha256 = "0p7vyw61nwvmaz7gz2bdh9fi6wp62i2vnzw6iz2r8cims4sbz53b";
+
+  doCheck = false;
 
   nativeBuildInputs = [ packr pkg-config ];
 
@@ -36,21 +39,7 @@ buildGoModule rec {
        -X github.com/trezor/blockbook/common.buildDate=unknown
   '';
 
-  goethereum = fetchFromGitHub {
-    owner = "ethereum";
-    repo = "go-ethereum";
-    rev = "v1.8.20";
-    sha256 = "0m2q1nz6f39pyr2rk6vflkwi4ykganzwr7wndpwr9rliw0x8jgi0";
-  };
-
-  overrideModAttrs = (_: {
-    postBuild = ''
-      rm -r vendor/github.com/ethereum/go-ethereum
-      cp -r --reflink=auto ${goethereum} vendor/github.com/ethereum/go-ethereum
-    '';
-  });
-
-  preBuild = stdenv.lib.optionalString stdenv.isDarwin ''
+  preBuild = lib.optionalString stdenv.isDarwin ''
     ulimit -n 8192
   '' + ''
     export CGO_LDFLAGS="-L${stdenv.cc.cc.lib}/lib -lrocksdb -lz -lbz2 -lsnappy -llz4 -lm -lstdc++"
@@ -65,11 +54,11 @@ buildGoModule rec {
     cp -r $src/static/css/ $out/share/
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Trezor address/account balance backend";
     homepage = "https://github.com/trezor/blockbook";
     license = licenses.agpl3;
-    maintainers = with maintainers; [ mmahut maintainers."1000101" ];
+    maintainers = with maintainers; [ mmahut _1000101 ];
     platforms = platforms.unix;
   };
 }

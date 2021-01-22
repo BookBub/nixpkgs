@@ -30,7 +30,7 @@ from urllib.request import urlopen
 COMPONENT_PREFIX = "homeassistant.components"
 PKG_SET = "python3Packages"
 
-# If some requirements are matched by multiple python packages,
+# If some requirements are matched by multiple Python packages,
 # the following can be used to choose one of them
 PKG_PREFERENCES = {
     # Use python3Packages.youtube-dl-light instead of python3Packages.youtube-dl
@@ -39,6 +39,7 @@ PKG_PREFERENCES = {
     "tensorflow-bin_2": "tensorflow",
     "tensorflowWithoutCuda": "tensorflow",
     "tensorflow-build_2": "tensorflow",
+    "whois": "python-whois",
 }
 
 
@@ -113,6 +114,10 @@ def name_to_attr_path(req: str, packages: Dict[str, Dict[str, str]]) -> Optional
     # instead of python-3.6-python-mpd2 inside Nixpkgs
     if req.startswith("python-") or req.startswith("python_"):
         names.append(req[len("python-") :])
+    # Add name variant without extra_require, e.g. samsungctl
+    # instead of samsungctl[websocket]
+    if req.endswith("]"):
+        names.append(req[:req.find("[")])
     for name in names:
         # treat "-" and "_" equally
         name = re.sub("[-_]", "[-_]", name)
@@ -173,9 +178,10 @@ def main() -> None:
         f.write("  components = {\n")
         for component, deps in build_inputs.items():
             available, missing = deps
-            f.write(f'    "{component}" = ps: with ps; [ ')
-            f.write(" ".join(available))
-            f.write("];")
+            f.write(f'    "{component}" = ps: with ps; [')
+            if available:
+                f.write(" " + " ".join(available))
+            f.write(" ];")
             if len(missing) > 0:
                 f.write(f" # missing inputs: {' '.join(missing)}")
             f.write("\n")

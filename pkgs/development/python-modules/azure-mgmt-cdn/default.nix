@@ -10,12 +10,12 @@
 
 buildPythonPackage rec {
   pname = "azure-mgmt-cdn";
-  version = "4.0.0";
+  version = "6.0.0";
 
   src = fetchPypi {
     inherit pname version;
     extension = "zip";
-    sha256 = "a53e9e09e2711ce9109329538fe9a8a1a5d0809efb231d7df481e55d09c4f02a";
+    sha256 = "590cd35c9f1556a2d93d93a88b5c5661f716de094f22db30f4d05dc58a131c84";
   };
 
   propagatedBuildInputs = [
@@ -33,6 +33,6 @@ buildPythonPackage rec {
     description = "This is the Microsoft Azure CDN Management Client Library";
     homepage = "https://github.com/Azure/azure-sdk-for-python";
     license = licenses.mit;
-    maintainers = with maintainers; [ mwilsoninsight ];
+    maintainers = with maintainers; [ maxwilson ];
   };
 }

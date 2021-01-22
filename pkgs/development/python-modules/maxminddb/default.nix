@@ -1,4 +1,4 @@
-{ stdenv, lib, buildPythonPackage, pythonAtLeast
+{ stdenv, lib, buildPythonPackage, pythonOlder, pythonAtLeast
 , fetchPypi
 , libmaxminddb
 , ipaddress
@@ -7,12 +7,13 @@
 }:
 
 buildPythonPackage rec {
-  version = "1.5.4";
+  version = "2.0.3";
   pname = "maxminddb";
+  disabled = pythonOlder "3.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "f4d28823d9ca23323d113dc7af8db2087aa4f657fafc64ff8f7a8afda871425b";
+    sha256 = "47e86a084dd814fac88c99ea34ba3278a74bc9de5a25f4b815b608798747c7dc";
   };
 
   buildInputs = [ libmaxminddb ];

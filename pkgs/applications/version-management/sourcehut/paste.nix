@@ -1,20 +1,16 @@
-{ stdenv, fetchgit, buildPythonPackage
+{ lib, stdenv, fetchgit, buildPythonPackage
 , python
 , srht, pyyaml }:
 
 buildPythonPackage rec {
   pname = "pastesrht";
-  version = "0.10.3";
+  version = "0.11.2";
 
   src = fetchgit {
     url = "https://git.sr.ht/~sircmpwn/paste.sr.ht";
     rev = version;
-    sha256 = "0sbs591ackrml09jmml4jspnbbqxqdmqy1c1j2rrvms6jcpkhlwb";
+    sha256 = "15hm5165v8a7ryw6i0vlf189slw4rp22cfgzznih18pbml7d0c8s";
   };
-
-  patches = [
-    ./use-srht-path.patch
-  ];
 
   nativeBuildInputs = srht.nativeBuildInputs;
 
@@ -25,10 +21,11 @@ buildPythonPackage rec {
 
   preBuild = ''
     export PKGVER=${version}
-    export SRHT_PATH=${srht}/${python.sitePackages}/srht
   '';
 
-  meta = with stdenv.lib; {
+  dontUseSetuptoolsCheck = true;
+
+  meta = with lib; {
     homepage = "https://git.sr.ht/~sircmpwn/paste.sr.ht";
     description = "Ad-hoc text file hosting service for the sr.ht network";
     license = licenses.agpl3;

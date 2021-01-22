@@ -1,8 +1,8 @@
-{ stdenv, buildGoModule, fetchFromGitHub }:
+{ lib, stdenv, buildGoModule, fetchFromGitHub }:
 
 buildGoModule rec {
   pname = "elvish";
-  version = "0.14.0";
+  version = "0.14.1";
 
   excludedPackages = [ "website" ];
 
@@ -12,12 +12,14 @@ buildGoModule rec {
     owner = "elves";
     repo = pname;
     rev = "v${version}";
-    sha256 = "1jsxhnm82pjzwvcjq7vrlldyjnv5j6c83a13dj6zphlqq99z68l4";
+    sha256 = "05wp3cx4s2cjf60yncdpmycs5h4z1dlin56dmljmfwz4z099079b";
   };
 
   vendorSha256 = "1f971n17h9bc0qcgs9ipiaw0x9807mz761fqm605br4ch1kp0897";
 
-  meta = with stdenv.lib; {
+  doCheck = false;
+
+  meta = with lib; {
     description = "A friendly and expressive command shell";
     longDescription = ''
       Elvish is a friendly interactive shell and an expressive programming

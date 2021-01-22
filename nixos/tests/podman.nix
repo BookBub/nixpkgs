@@ -34,7 +34,6 @@ import ./make-test-python.nix (
       podman.wait_for_unit("sockets.target")
       start_all()
 
-
       with subtest("Run container as root with runc"):
           podman.succeed("tar cv --files-from /dev/null | podman import - scratchimg")
           podman.succeed(
@@ -53,6 +52,18 @@ import ./make-test-python.nix (
           podman.succeed("podman stop sleeping")
           podman.succeed("podman rm sleeping")
 
+      with subtest("Run container as root with the default backend"):
+          podman.succeed("tar cv --files-from /dev/null | podman import - scratchimg")
+          podman.succeed(
+              "podman run -d --name=sleeping -v /nix/store:/nix/store -v /run/current-system/sw/bin:/bin scratchimg /bin/sleep 10"
+          )
+          podman.succeed("podman ps | grep sleeping")
+          podman.succeed("podman stop sleeping")
+          podman.succeed("podman rm sleeping")
+
+      # create systemd session for rootless
+      podman.succeed("loginctl enable-linger alice")
+
       with subtest("Run container rootless with runc"):
           podman.succeed(su_cmd("tar cv --files-from /dev/null | podman import - scratchimg"))
           podman.succeed(
@@ -69,6 +80,17 @@ import ./make-test-python.nix (
           podman.succeed(
               su_cmd(
                   "podman run --runtime=crun -d --name=sleeping -v /nix/store:/nix/store -v /run/current-system/sw/bin:/bin scratchimg /bin/sleep 10"
+              )
+          )
+          podman.succeed(su_cmd("podman ps | grep sleeping"))
+          podman.succeed(su_cmd("podman stop sleeping"))
+          podman.succeed(su_cmd("podman rm sleeping"))
+
+      with subtest("Run container rootless with the default backend"):
+          podman.succeed(su_cmd("tar cv --files-from /dev/null | podman import - scratchimg"))
+          podman.succeed(
+              su_cmd(
+                  "podman run -d --name=sleeping -v /nix/store:/nix/store -v /run/current-system/sw/bin:/bin scratchimg /bin/sleep 10"
               )
           )
           podman.succeed(su_cmd("podman ps | grep sleeping"))

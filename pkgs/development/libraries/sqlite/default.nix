@@ -1,21 +1,21 @@
-{ stdenv, fetchurl, zlib, interactive ? false, readline ? null, ncurses ? null }:
+{ lib, stdenv, fetchurl, zlib, interactive ? false, readline ? null, ncurses ? null }:
 
 assert interactive -> readline != null && ncurses != null;
 
-with stdenv.lib;
+with lib;
 
 let
-  archiveVersion = import ./archive-version.nix stdenv.lib;
+  archiveVersion = import ./archive-version.nix lib;
 in
 
 stdenv.mkDerivation rec {
   pname = "sqlite";
-  version = "3.32.3";
+  version = "3.34.0";
 
-  # NB! Make sure to update analyzer.nix src (in the same directory).
+  # NB! Make sure to update ./tools.nix src (in the same directory).
   src = fetchurl {
     url = "https://sqlite.org/2020/sqlite-autoconf-${archiveVersion version}.tar.gz";
-    sha256 = "0rlbaq177gcgk5dswd3akbhv2nvvzljrbhgy18hklbhw7h90f5d3";
+    sha256 = "1vlsvlp5nvhd5pdjpmdczfsv7mml2gsalykl6x3palbxwgxbfvdz";
   };
 
   outputs = [ "bin" "dev" "out" ];

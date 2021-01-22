@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , buildPythonPackage
 , fetchPypi
 , unittest2
@@ -11,11 +11,11 @@
 
 buildPythonPackage rec {
   pname = "rsa";
-  version = "4.1";
+  version = "4.6";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "6fa6a54eb72bfc0abca7f27880b978b14a643ba2a6ad9f4a56a95be82129ca1b";
+    sha256 = "109ea5a66744dd859bf16fe904b8d8b627adafb9408753161e766a92e7d681fa";
   };
 
   checkInputs = [ unittest2 mock ];
@@ -28,7 +28,7 @@ buildPythonPackage rec {
   # No tests in archive
   doCheck = false;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://stuvel.eu/rsa";
     license = licenses.asl20;
     description = "A pure-Python RSA implementation";

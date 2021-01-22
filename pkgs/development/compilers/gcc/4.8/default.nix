@@ -7,15 +7,20 @@
 , profiledCompiler ? false
 , langJit ? false
 , staticCompiler ? false
-, enableShared ? true
+, # N.B. the defult is intentionally not from an `isStatic`. See
+  # https://gcc.gnu.org/install/configure.html - this is about target
+  # platform libraries not host platform ones unlike normal. But since
+  # we can't rebuild those without also rebuilding the compiler itself,
+  # we opt to always build everything unlike our usual policy.
+  enableShared ? true
 , enableLTO ? true
 , texinfo ? null
 , perl ? null # optional, for texi2pod (then pod2man); required for Java
-, gmp, mpfr, libmpc, gettext, which
+, gmp, mpfr, libmpc, gettext, which, patchelf
 , libelf                      # optional, for link-time optimizations (LTO)
 , cloog ? null, isl ? null # optional, for the Graphite optimization framework.
 , zlib ? null, boehmgc ? null
-, zip ? null, unzip ? null, pkgconfig ? null
+, zip ? null, unzip ? null, pkg-config ? null
 , gtk2 ? null, libart_lgpl ? null
 , libX11 ? null, libXt ? null, libSM ? null, libICE ? null, libXtst ? null
 , libXrender ? null, xorgproto ? null
@@ -156,15 +161,18 @@ stdenv.mkDerivation ({
   depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [ texinfo which gettext ]
     ++ (optional (perl != null) perl)
-    ++ (optional javaAwtGtk pkgconfig);
+    ++ (optional javaAwtGtk pkg-config);
 
   # For building runtime libs
   depsBuildTarget =
-    if hostPlatform == buildPlatform then [
-      targetPackages.stdenv.cc.bintools # newly-built gcc will be used
-    ] else assert targetPlatform == hostPlatform; [ # build != host == target
-      stdenv.cc
-    ];
+    (
+      if hostPlatform == buildPlatform then [
+        targetPackages.stdenv.cc.bintools # newly-built gcc will be used
+      ] else assert targetPlatform == hostPlatform; [ # build != host == target
+        stdenv.cc
+      ]
+    )
+    ++ optional targetPlatform.isLinux patchelf;
 
   buildInputs = [
     gmp mpfr libmpc libelf

@@ -1,14 +1,14 @@
-{ stdenv, fetchFromGitHub, cmake, openssl }:
+{ lib, stdenv, fetchFromGitHub, cmake, openssl }:
 
 stdenv.mkDerivation rec {
   pname = "actor-framework";
-  version = "0.17.5";
+  version = "0.17.6";
 
   src = fetchFromGitHub {
     owner = "actor-framework";
     repo = "actor-framework";
     rev = version;
-    sha256 = "1w7sanxhh4sv4ap3ildqzlziazcy7ydx2pbjjrf3k60lcwq0lzn6";
+    sha256 = "03pi2jcdvdxncvv3hmzlamask0db1fc5l79k9rgq9agl0swd0mnz";
   };
 
   nativeBuildInputs = [ cmake ];
@@ -26,7 +26,7 @@ stdenv.mkDerivation rec {
     export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH''${DYLD_LIBRARY_PATH:+:}$PWD/lib
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "An open source implementation of the actor model in C++";
     homepage = "http://actor-framework.org/";
     license = licenses.bsd3;

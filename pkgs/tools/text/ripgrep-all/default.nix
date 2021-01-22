@@ -46,7 +46,7 @@ rustPlatform.buildRustPackage rec {
 
   doInstallCheck = true;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Ripgrep, but also search in PDFs, E-Books, Office documents, zip, tar.gz, and more";
     longDescription = ''
       Ripgrep, but also search in PDFs, E-Books, Office documents, zip, tar.gz, etc.
@@ -58,6 +58,5 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://github.com/phiresky/ripgrep-all";
     license = with licenses; [ agpl3Plus ];
     maintainers = with maintainers; [ zaninime ma27 ];
-    platforms = platforms.all;
   };
 }

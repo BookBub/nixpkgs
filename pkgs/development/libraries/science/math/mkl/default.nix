@@ -1,10 +1,12 @@
-{ stdenvNoCC
+{ stdenv
+, callPackage
+, stdenvNoCC
 , fetchurl
 , rpmextract
 , undmg
 , darwin
 , validatePkgConfig
-, enableStatic ? false
+, enableStatic ? stdenv.hostPlatform.isStatic
 }:
 
 /*
@@ -19,14 +21,17 @@ let
   # Darwin is pinned to 2019.3 because the DMG does not unpack; see here for details:
   # https://github.com/matthewbauer/undmg/issues/4
   year = if stdenvNoCC.isDarwin then "2019" else "2020";
-  spot = if stdenvNoCC.isDarwin then "3" else "1";
-  rel = if stdenvNoCC.isDarwin then "199" else "217";
+  spot = if stdenvNoCC.isDarwin then "3" else "4";
+  rel = if stdenvNoCC.isDarwin then "199" else "304";
+
+  # Replace `openmpSpot` by `spot` after 2020.
+  openmpSpot = if stdenvNoCC.isDarwin then spot else "3";
 
   rpm-ver = "${year}.${spot}-${rel}-${year}.${spot}-${rel}";
 
   # Intel openmp uses its own versioning, but shares the spot release patch.
   openmp = if stdenvNoCC.isDarwin then "19.0" else "19.1";
-  openmp-ver = "${openmp}.${spot}-${rel}-${openmp}.${spot}-${rel}";
+  openmp-ver = "${openmp}.${openmpSpot}-${rel}-${openmp}.${openmpSpot}-${rel}";
 
   shlibExt = stdenvNoCC.hostPlatform.extensions.sharedLibrary;
 
@@ -42,8 +47,8 @@ in stdenvNoCC.mkDerivation {
       })
     else
       (fetchurl {
-        url = "https://registrationcenter-download.intel.com/akdlm/irc_nas/tec/16533/l_mkl_${version}.tgz";
-        sha256 = "0v86hrqg15mbc78m9qk8dbkaaq3mlwashgbf9n79kxpl1gilnah8";
+        url = "https://registrationcenter-download.intel.com/akdlm/irc_nas/tec/16917/l_mkl_${version}.tgz";
+        hash = "sha256-IxTUZTaXTb0I8qTk+emhVdx+eeJ5jHTn3fqtAKWRfqU=";
       });
 
   nativeBuildInputs = [ validatePkgConfig ] ++ (if stdenvNoCC.isDarwin
@@ -86,7 +91,8 @@ in stdenvNoCC.mkDerivation {
       substituteInPlace $f \
         --replace "prefix=<INSTALLDIR>/mkl" "prefix=$out" \
         --replace $\{MKLROOT} "$out" \
-        --replace "lib/intel64_lin" "lib"
+        --replace "lib/intel64_lin" "lib" \
+        --replace "lib/intel64" "lib"
     done
 
     for f in $(find opt/intel -name 'mkl*iomp.pc') ; do
@@ -151,6 +157,8 @@ in stdenvNoCC.mkDerivation {
   # Per license agreement, do not modify the binary
   dontStrip = true;
   dontPatchELF = true;
+
+  passthru.tests.pkg-config = callPackage ./test { };
 
   meta = with stdenvNoCC.lib; {
     description = "Intel Math Kernel Library";

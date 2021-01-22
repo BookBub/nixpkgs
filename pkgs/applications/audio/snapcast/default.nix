@@ -1,5 +1,6 @@
-{ stdenv, lib, fetchFromGitHub, cmake, pkgconfig
-, alsaLib, asio, avahi, boost170, flac, libogg, libvorbis, soxr }:
+{ stdenv, lib, fetchFromGitHub, cmake, pkg-config
+, alsaLib, asio, avahi, boost170, flac, libogg, libvorbis, soxr
+, nixosTests }:
 
 let
 
@@ -42,7 +43,7 @@ stdenv.mkDerivation rec {
     sha256 = "152ic8hlyawcmj9pykb33xc6yx7il6yb9ilmsy6m9nlh40m8yxls";
   };
 
-  nativeBuildInputs = [ cmake pkgconfig boost170.dev ];
+  nativeBuildInputs = [ cmake pkg-config boost170.dev ];
   # snapcast also supports building against tremor but as we have libogg, that's
   # not needed
   buildInputs = [
@@ -56,6 +57,8 @@ stdenv.mkDerivation rec {
     install -d $out/share/doc/snapcast
     cp -r ../doc/* ../*.md $out/share/doc/snapcast
   '';
+
+  passthru.tests.snapcast = nixosTests.snapcast;
 
   meta = with lib; {
     description = "Synchronous multi-room audio player";

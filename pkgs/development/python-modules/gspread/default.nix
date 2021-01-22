@@ -1,7 +1,9 @@
-{ stdenv
+{ lib, stdenv
 , buildPythonPackage
 , fetchPypi
 , requests
+, google-auth
+, google-auth-oauthlib
 }:
 
 buildPythonPackage rec {
@@ -13,9 +15,9 @@ buildPythonPackage rec {
     sha256 = "e04f1a6267b3929fc1600424c5ec83906d439672cafdd61a9d5b916a139f841c";
   };
 
-  propagatedBuildInputs = [ requests ];
+  propagatedBuildInputs = [ requests google-auth google-auth-oauthlib ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Google Spreadsheets client library";
     homepage = "https://github.com/burnash/gspread";
     license = licenses.mit;

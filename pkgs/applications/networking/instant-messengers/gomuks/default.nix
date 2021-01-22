@@ -1,21 +1,38 @@
-{ stdenv, buildGoModule, fetchFromGitHub, olm, makeDesktopItem }:
+{ lib
+, stdenv
+, substituteAll
+, buildGoModule
+, fetchFromGitHub
+, makeDesktopItem
+, makeWrapper
+, libnotify
+, olm
+, pulseaudio
+, sound-theme-freedesktop
+}:
 
 buildGoModule rec {
   pname = "gomuks";
-  version = "0.1.2";
-
-  goPackagePath = "maunium.net/go/gomuks";
+  version = "0.2.2";
 
   src = fetchFromGitHub {
     owner = "tulir";
     repo = pname;
-    rev = "v" + version;
-    sha256 = "11bainw4w9fdrhv2jm0j9fw0f7r4cxlblyazbhckgr4j9q900383";
+    rev = "v${version}";
+    sha256 = "169xyd44jyfh5njwmhsmkah8njfgnp9q9c2b13p0ry5saicwm5h5";
   };
 
-  vendorSha256 = "11rk7pma6dr6fsyz8hpjyr7nc2c7ichh5m7ds07m89gzk6ar55gb";
+  vendorSha256 = "1l8qnz0qy90zpywfx7pbkqpxg7rkvc9j622zcmkf38kdc1z6w20a";
 
-  buildInputs = [ olm ];
+  doCheck = false;
+
+  buildInputs = [ makeWrapper olm ];
+
+  # Upstream issue: https://github.com/tulir/gomuks/issues/260
+  patches = lib.optional stdenv.isLinux (substituteAll {
+    src = ./hardcoded_path.patch;
+    soundTheme = sound-theme-freedesktop;
+  });
 
   postInstall = ''
     cp -r ${
@@ -30,13 +47,15 @@ buildGoModule rec {
       }
     }/* $out/
     substituteAllInPlace $out/share/applications/*
+    wrapProgram $out/bin/gomuks \
+      --prefix PATH : "${lib.makeBinPath (lib.optionals stdenv.isLinux [ libnotify pulseaudio ])}"
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://maunium.net/go/gomuks/";
     description = "A terminal based Matrix client written in Go";
     license = licenses.gpl3;
-    maintainers = with maintainers; [ tilpner emily ];
+    maintainers = with maintainers; [ charvp emily ];
     platforms = platforms.unix;
   };
 }

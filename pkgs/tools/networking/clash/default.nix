@@ -1,29 +1,29 @@
-{ stdenv, fetchFromGitHub, buildGoModule }:
+{ lib, stdenv, fetchFromGitHub, buildGoModule }:
 
 buildGoModule rec {
   pname = "clash";
-  version = "1.0.0";
+  version = "1.3.5";
 
   src = fetchFromGitHub {
     owner = "Dreamacro";
     repo = pname;
     rev = "v${version}";
-    sha256 = "0qyfv6h6m86m5bwayj0s1pjldnbagy63zc2ygzpnicihmd58khny";
+    sha256 = "sha256-yTkUGsVwK6nwHUQpYhkPYF/Cf4URrr5ThB67sxq7Ecs=";
   };
 
-  goPackagePath = "github.com/Dreamacro/clash";
-  vendorSha256 = "0ap6wsx23s4q730s6d5cgc4ginh8zj5sd32k0za49fh50v8k8zbh";
+  vendorSha256 = "sha256-J7VGYxX1bH5CeDhpqK9mIbHUekXslImZ+O3wN5Q7kYk=";
+
+  doCheck = false;
 
   buildFlagsArray = [
     "-ldflags="
-    "-X ${goPackagePath}/constant.Version=${version}"
+    "-X github.com/Dreamacro/clash/constant.Version=${version}"
   ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A rule-based tunnel in Go";
     homepage = "https://github.com/Dreamacro/clash";
     license = licenses.gpl3;
-    maintainers = with maintainers; [ contrun filalex77 ];
-    platforms = platforms.all;
+    maintainers = with maintainers; [ contrun Br1ght0ne ];
   };
 }

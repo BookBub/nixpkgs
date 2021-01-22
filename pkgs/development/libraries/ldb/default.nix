@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , fetchurl
 , python3
 , pkg-config
@@ -16,11 +16,11 @@
 
 stdenv.mkDerivation rec {
   pname = "ldb";
-  version = "2.1.4";
+  version = "2.2.0";
 
   src = fetchurl {
     url = "mirror://samba/ldb/${pname}-${version}.tar.gz";
-    sha256 = "0kmzs2s7fvar9ksaxyiqlh8q8mbwc7bxrq9w1y91zlyb23p142wy";
+    sha256 = "0pxxb3sn9lignkf80kndd84shxqk9m2qwimz62gzb6khd4bvajqk";
   };
 
   outputs = [ "out" "dev" ];
@@ -54,7 +54,7 @@ stdenv.mkDerivation rec {
 
   stripDebugList = [ "bin" "lib" "modules" ];
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A LDAP-like embedded database";
     homepage = "https://ldb.samba.org/";
     license = licenses.lgpl3Plus;

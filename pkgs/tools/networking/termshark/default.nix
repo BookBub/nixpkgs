@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub, makeWrapper, buildGoModule, wireshark-cli }:
+{ lib, stdenv, fetchFromGitHub, makeWrapper, buildGoModule, wireshark-cli }:
 
 buildGoModule rec {
   pname = "termshark";
@@ -16,8 +16,10 @@ buildGoModule rec {
 
   vendorSha256 = "14apff3vcbndr30765lzi4qswakavb4396bjixxvpxv6i5c04dq7";
 
+  doCheck = false;
+
   postFixup = ''
-    wrapProgram $out/bin/termshark --prefix PATH : ${stdenv.lib.makeBinPath [ wireshark-cli ]}
+    wrapProgram $out/bin/termshark --prefix PATH : ${lib.makeBinPath [ wireshark-cli ]}
   '';
 
   buildFlagsArray = ''
@@ -25,7 +27,7 @@ buildGoModule rec {
     -X github.com/gcla/termshark.Version=${version}
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://termshark.io/";
     description = "A terminal UI for wireshark-cli, inspired by Wireshark";
     license = licenses.mit;

@@ -1,17 +1,17 @@
-{ stdenv, buildPythonPackage, fetchPypi
-, six, click, requests, pytz, tabulate, pythonOlder
+{ lib, stdenv, buildPythonPackage, fetchPypi
+, six, click, requests, requests-hawk, pytz, tabulate, pythonOlder
 }:
 
 buildPythonPackage rec {
   pname = "alerta";
-  version = "7.5.1";
+  version = "8.3.0";
 
   src = fetchPypi {
     inherit pname version;
-    sha256 = "e903d4b097d4650983faecedc4e2dffd27a962b671643098f8425f9a19884d0f";
+    sha256 = "83c7d751bad0cb9bd7886700da4cd83c5451b2e8eb8d4cc697966e02d6a565f8";
   };
 
-  propagatedBuildInputs = [ six click requests pytz tabulate ];
+  propagatedBuildInputs = [ six click requests requests-hawk pytz tabulate ];
 
   doCheck = false;
 
@@ -21,7 +21,7 @@ buildPythonPackage rec {
 
   disabled = pythonOlder "3.5";
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://alerta.io";
     description = "Alerta Monitoring System command-line interface";
     license = licenses.asl20;

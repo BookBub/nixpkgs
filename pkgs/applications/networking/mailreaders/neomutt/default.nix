@@ -1,18 +1,19 @@
-{ stdenv, fetchFromGitHub, gettext, makeWrapper, tcl, which, writeScript
+{ lib, stdenv, fetchFromGitHub, gettext, makeWrapper, tcl, which, writeScript
 , ncurses, perl , cyrus_sasl, gss, gpgme, kerberos, libidn, libxml2, notmuch, openssl
-, lmdb, libxslt, docbook_xsl, docbook_xml_dtd_42, elinks, mailcap, runtimeShell, sqlite, zlib
+, lmdb, libxslt, docbook_xsl, docbook_xml_dtd_42, w3m, mailcap, runtimeShell, sqlite, zlib
 , glibcLocales
+, fetchpatch
 }:
 
 stdenv.mkDerivation rec {
-  version = "20200626";
+  version = "20201127";
   pname = "neomutt";
 
   src = fetchFromGitHub {
     owner  = "neomutt";
     repo   = "neomutt";
     rev    = version;
-    sha256 = "0r16fy02z61dbjdxc28yzj5i4f6r7aakh453gaqc8ilm1nsxhmnp";
+    sha256 = "sha256-BkDGKZmpwahDw1vD67CyWfxD93H83kcpv5JBGVL5F/o=";
   };
 
   buildInputs = [
@@ -22,7 +23,7 @@ stdenv.mkDerivation rec {
   ];
 
   nativeBuildInputs = [
-    docbook_xsl docbook_xml_dtd_42 gettext libxml2 libxslt.bin makeWrapper tcl which zlib elinks
+    docbook_xsl docbook_xml_dtd_42 gettext libxml2 libxslt.bin makeWrapper tcl which zlib w3m
   ];
 
   enableParallelBuilding = true;
@@ -40,7 +41,7 @@ stdenv.mkDerivation rec {
 
     # allow neomutt to map attachments to their proper mime.types if specified wrongly
     # and use a far more comprehensive list than the one shipped with neomutt
-    substituteInPlace sendlib.c \
+    substituteInPlace send/sendlib.c \
       --replace /etc/mime.types ${mailcap}/etc/mime.types
   '';
 
@@ -93,7 +94,7 @@ stdenv.mkDerivation rec {
   checkTarget = "test";
   postCheck = "unset NEOMUTT_TEST_DIR";
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "A small but very powerful text-based mail client";
     homepage    = "http://www.neomutt.org";
     license     = licenses.gpl2Plus;

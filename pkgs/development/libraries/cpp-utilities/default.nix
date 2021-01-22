@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , fetchFromGitHub
 , fetchpatch
 , cmake
@@ -7,13 +7,13 @@
 
 stdenv.mkDerivation rec {
   pname = "cpp-utilities";
-  version = "5.5.0";
+  version = "5.10.0";
 
   src = fetchFromGitHub {
     owner = "Martchus";
     repo = pname;
     rev = "v${version}";
-    sha256 = "1kzwclf8l89dbw10ya0grhdj7dspmj7rg7rkaa8b7n5lgla968jr";
+    sha256 = "sha256-ZqpgnxI6Py+Xrf+MK852j+kE2JGFz15kWAXOqy+bjVc=";
   };
 
   nativeBuildInputs = [ cmake ];
@@ -22,7 +22,7 @@ stdenv.mkDerivation rec {
   checkFlagsArray = [ "LD_LIBRARY_PATH=$(PWD)" ];
   doCheck = true;
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     homepage = "https://github.com/Martchus/cpp-utilities";
     description = "Common C++ classes and routines used by @Martchus' applications featuring argument parser, IO and conversion utilities";
     license = licenses.gpl2;

@@ -1,4 +1,4 @@
-{ stdenv
+{ lib, stdenv
 , fetchurl
 , makeWrapper
 , opencl-headers
@@ -8,11 +8,11 @@
 
 stdenv.mkDerivation rec {
   pname   = "hashcat";
-  version = "6.0.0";
+  version = "6.1.1";
 
   src = fetchurl {
     url = "https://hashcat.net/files/hashcat-${version}.tar.gz";
-    sha256 = "118jxk4xh55m1vhaz5h2j2385mp4p397m16g9hi4x2k0b8m0zrz8";
+    sha256 = "104z63m7lqbb0sdrxhf9yi15l4a9zwf9m6zs9dbb3gf0nfxl1h9r";
   };
 
   nativeBuildInputs = [ makeWrapper ];
@@ -30,7 +30,7 @@ stdenv.mkDerivation rec {
     wrapProgram $out/bin/hashcat --prefix LD_LIBRARY_PATH : ${ocl-icd}/lib
   '';
 
-  meta = with stdenv.lib; {
+  meta = with lib; {
     description = "Fast password cracker";
     homepage    = "https://hashcat.net/hashcat/";
     license     = licenses.mit;

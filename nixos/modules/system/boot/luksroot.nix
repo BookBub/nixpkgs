@@ -404,7 +404,7 @@ let
           echo "Please move your mouse to create needed randomness."
         ''}
           echo "Waiting for your FIDO2 device..."
-          fido2luks -i open ${device} ${name} ${fido2.credential} --await-dev ${toString fido2.gracePeriod} --salt string:$passphrase
+          fido2luks open ${device} ${name} ${fido2.credential} --await-dev ${toString fido2.gracePeriod} --salt string:$passphrase
         if [ $? -ne 0 ]; then
           echo "No FIDO2 key found, falling back to normal open procedure"
           open_normally
@@ -516,7 +516,7 @@ in
         <filename>/dev/mapper/<replaceable>name</replaceable></filename>.
       '';
 
-      type = with types; loaOf (submodule (
+      type = with types; attrsOf (submodule (
         { name, ... }: { options = {
 
           name = mkOption {
@@ -641,7 +641,7 @@ in
             credential = mkOption {
               default = null;
               example = "f1d00200d8dc783f7fb1e10ace8da27f8312d72692abfca2f7e4960a73f48e82e1f7571f6ebfcee9fb434f9886ccc8fcc52a6614d8d2";
-              type = types.str;
+              type = types.nullOr types.str;
               description = "The FIDO2 credential ID.";
             };
 
