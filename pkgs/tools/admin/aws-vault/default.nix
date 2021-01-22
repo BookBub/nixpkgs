@@ -3,7 +3,7 @@ let
   name = "aws-vault";
   ver = "6.2.0";
   source = if stdenv.isDarwin then fetchurl {
-    url = "https://github.com/99designs/${name}/releases/download/v${version}/aws-vault-darwin-amd64.dmg";
+    url = "https://github.com/99designs/${name}/releases/download/v${ver}/aws-vault-darwin-amd64.dmg";
     sha256 = "1lwbmzc5zs386ksxvq51jydzx0wjnsxrq3drnnlf13rb2x844dn6";
   } else fetchFromGitHub {
     owner = "99designs";
