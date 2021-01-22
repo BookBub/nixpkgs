@@ -24,7 +24,7 @@ buildGoModule rec {
 
   subPackages = [ "." ];
 
-  buildInputs = if stdenv.isDarwin then [ undmg ] else [];
+  nativeBuildInputs = if stdenv.isDarwin then [ undmg ] else [];
 
   # set the version. see: aws-vault's Makefile
   buildFlagsArray = ''
