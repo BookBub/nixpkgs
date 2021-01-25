@@ -3,8 +3,8 @@ let
   name = "aws-vault";
   ver = "6.2.0";
   source = if stdenv.isDarwin then fetchurl {
-    url = "https://github.com/99designs/${name}/releases/download/v${ver}/aws-vault-darwin-amd64.dmg";
-    sha256 = "1lwbmzc5zs386ksxvq51jydzx0wjnsxrq3drnnlf13rb2x844dn6";
+    url = "https://github.com/BookBub/aws-vault/releases/download/v${ver}/aws-vault-darwin-${ver}.tar.gz";
+    sha256 = "0lmv5skszq5whpb4l17fhym85n5f9mam385wzpyqfjd6m2vdv5gi";
   } else fetchFromGitHub {
     owner = "99designs";
     repo = name;
@@ -23,8 +23,6 @@ buildGoModule rec {
   doCheck = false;
 
   subPackages = [ "." ];
-
-  nativeBuildInputs = if stdenv.isDarwin then [ undmg ] else [];
 
   # set the version. see: aws-vault's Makefile
   buildFlagsArray = ''
