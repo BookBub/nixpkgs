@@ -3,7 +3,7 @@ let
   name = "aws-vault";
   ver = "6.2.0";
   source = if stdenv.isDarwin then fetchurl {
-    url = "https://github.com/BookBub/aws-vault/releases/download/v${ver}/aws-vault-darwin-${ver}.tar.gz";
+    url = "https://github.com/BookBub/aws-vault/releases/download/v${ver}/aws-vault-darwin.tar.gz";
     sha256 = "0lmv5skszq5whpb4l17fhym85n5f9mam385wzpyqfjd6m2vdv5gi";
   } else fetchFromGitHub {
     owner = "99designs";
